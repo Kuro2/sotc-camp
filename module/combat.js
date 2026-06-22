@@ -19,12 +19,12 @@
 export function applyOperator(value, operator, variable = 0) {
   switch (operator) {
     case "maintain": return value;
-    case "clear":    return 0;
-    case "add":      return value + variable;
+    case "clear": return 0;
+    case "add": return value + variable;
     case "subtract": return Math.max(value - variable, 0);
     case "multiply": return value * variable;
-    case "divide":   return Math.floor(value / Math.max(variable, 1));
-    default:         return value;
+    case "divide": return Math.floor(value / Math.max(variable, 1));
+    default: return value;
   }
 }
 
@@ -61,7 +61,7 @@ export class SotCCombat extends Combat {
         if (["haste", "bind"].includes(status.name.toLowerCase())) continue;
         const { effect, target, potency_flat = 0, potency = 0, count = 0 } = status.system;
         if (!target) continue;
-        const sign  = effect === "Increase" ? 1 : -1;
+        const sign = effect === "Increase" ? 1 : -1;
         const bonus = (Number(potency_flat || 0) + Number(potency || 0) * Number(count || 0)) * sign;
         if (target === "speed") speed_mod += bonus;
       }
@@ -69,20 +69,20 @@ export class SotCCombat extends Combat {
       const hasteStatus = actor.items.find(i =>
         i.type === "status" && i.name.toLowerCase() === "haste" && Number(i.system?.count) > 0
       );
-      const bindStatus  = actor.items.find(i =>
+      const bindStatus = actor.items.find(i =>
         i.type === "status" && i.name.toLowerCase() === "bind" && Number(i.system?.count) > 0
       );
       const hasteCount = hasteStatus ? Number(hasteStatus.system.count) : 0;
-      const bindCount  = bindStatus  ? Number(bindStatus.system.count)  : 0;
+      const bindCount = bindStatus ? Number(bindStatus.system.count) : 0;
 
       if (hasteCount || bindCount) {
         const baseMin = (() => {
           const m = (baseFormula ?? "1d6").match(/^(\d+)d(\d+)/i);
           return m ? Number(m[1]) : 1;
         })();
-        const net     = hasteCount - bindCount;
+        const net = hasteCount - bindCount;
         const clamped = Math.max(1 - baseMin, net);
-        speed_mod    += clamped;
+        speed_mod += clamped;
       }
 
       return Number(speed_mod) || 0;
@@ -100,22 +100,22 @@ export class SotCCombat extends Combat {
       await actor.prepareDerivedData();
 
       const actor_formula = actor?.system?.speed_dice?.dice_size;
-      let total_formula   = `${actor_formula}`;
+      let total_formula = `${actor_formula}`;
 
       const status_speed_mod = computeSpeedModFromStatuses(actor, actor_formula);
       const stored_speed_mod = actor?.system?.modifiers.speed_mod ?? 0;
-      const init_mod         = status_speed_mod || stored_speed_mod || 0;
-      const actor_type       = actor?.system?.initiative_type;
+      const init_mod = status_speed_mod || stored_speed_mod || 0;
+      const actor_type = actor?.system?.initiative_type;
 
-      if (init_mod > 0)       total_formula = `${total_formula}+${init_mod}`;
-      else if (init_mod < 0)  total_formula = `${total_formula}-${-init_mod}`;
+      if (init_mod > 0) total_formula = `${total_formula}+${init_mod}`;
+      else if (init_mod < 0) total_formula = `${total_formula}-${-init_mod}`;
 
       const final_formula = (total_formula && Roll.validate(total_formula))
         ? total_formula
         : formula || CONFIG.Combat.initiative.formula;
 
-      const roll        = await (new Roll(final_formula).evaluate({ async: true }));
-      let   final_init  = Math.max(1, roll.total);
+      const roll = await (new Roll(final_formula).evaluate({ async: true }));
+      let final_init = Math.max(1, roll.total);
       if (actor_type === "player") final_init = final_init + 0.01;
 
       updates.push({ _id: c.id, initiative: final_init });
@@ -124,29 +124,29 @@ export class SotCCombat extends Combat {
       const hasteToClear = actor.items.find(i =>
         i.type === "status" && i.name.toLowerCase() === "haste" && Number(i.system?.count) > 0
       );
-      const bindToClear  = actor.items.find(i =>
+      const bindToClear = actor.items.find(i =>
         i.type === "status" && i.name.toLowerCase() === "bind" && Number(i.system?.count) > 0
       );
       const clearUpdates = [];
       if (hasteToClear) clearUpdates.push({ _id: hasteToClear.id, "system.count": 0 });
-      if (bindToClear)  clearUpdates.push({ _id: bindToClear.id,  "system.count": 0 });
+      if (bindToClear) clearUpdates.push({ _id: bindToClear.id, "system.count": 0 });
       if (clearUpdates.length) await actor.updateEmbeddedDocuments("Item", clearUpdates);
 
       if (this._sotcGroupInitiative) {
         this._sotcGroupInitiative.push({
-          name:    c.name,
-          img:     c.actor?.img ?? "icons/svg/mystery-man.svg",
+          name: c.name,
+          img: c.actor?.img ?? "icons/svg/mystery-man.svg",
           formula: final_formula,
-          rolled:  roll.total - init_mod,
-          mod:     init_mod,
-          final:   final_init,
-          type:    actor_type
+          rolled: roll.total - init_mod,
+          mod: init_mod,
+          final: final_init,
+          type: actor_type
         });
       } else {
         await roll.toMessage({
           speaker: ChatMessage.getSpeaker({ actor: c.actor }),
-          flavor:  `${c.name} rolls initiative (${roll.total - init_mod} → ${final_init})`,
-          sound:   CONFIG.sounds.dice ?? null,
+          flavor: `${c.name} rolls initiative (${roll.total - init_mod} → ${final_init})`,
+          sound: CONFIG.sounds.dice ?? null,
         }, messageOptions);
       }
     }
@@ -164,8 +164,8 @@ export class SotCCombat extends Combat {
 
     this._sotcGroupInitiative = [];
 
-    const originalSound     = CONFIG.sounds.dice;
-    CONFIG.sounds.dice      = null;
+    const originalSound = CONFIG.sounds.dice;
+    CONFIG.sounds.dice = null;
     try {
       await this.rollInitiative(ids, options);
     } finally {
@@ -182,13 +182,13 @@ export class SotCCombat extends Combat {
     delete this._sotcGroupInitiative;
 
     if (initRows.length) {
-      const round      = this.round ?? 1;
+      const round = this.round ?? 1;
       const playerRows = initRows.filter(r => r.type === "player").sort((a, b) => b.final - a.final);
-      const enemyRows  = initRows.filter(r => r.type !== "player").sort((a, b) => b.final - a.final);
-      const allRows    = [...playerRows, ...enemyRows];
+      const enemyRows = initRows.filter(r => r.type !== "player").sort((a, b) => b.final - a.final);
+      const allRows = [...playerRows, ...enemyRows];
 
-      const typeColor = r  => r.type === "player" ? "#4caf7d" : "#e05050";
-      const modStr    = r  => r.mod > 0 ? `+${r.mod}` : r.mod < 0 ? `${r.mod}` : "";
+      const typeColor = r => r.type === "player" ? "#4caf7d" : "#e05050";
+      const modStr = r => r.mod > 0 ? `+${r.mod}` : r.mod < 0 ? `${r.mod}` : "";
 
       const rowsHtml = allRows.map(r => `
         <div style="display:flex; align-items:center; gap:8px; padding:3px 0; border-top:1px solid #1e1c2a;">
@@ -198,7 +198,7 @@ export class SotCCombat extends Combat {
           <span style="font-size:12px; font-weight:700; color:${typeColor(r)}; min-width:24px; text-align:right;">${Math.floor(r.final)}</span>
         </div>`).join("");
 
-      const topResult  = allRows[0];
+      const topResult = allRows[0];
       const previewText = topResult
         ? `<span style="font-size:11px; color:#aaa;">${topResult.name} <strong style="color:#c9a227;">${Math.floor(topResult.final)}</strong> &nbsp;· ${initRows.length} rolled</span>`
         : `<span style="font-size:11px; color:#aaa;">${initRows.length} rolled</span>`;
@@ -218,7 +218,7 @@ export class SotCCombat extends Combat {
       await ChatMessage.create({
         speaker: { alias: "Combat" },
         content: cardHtml,
-        flags:   { sotc: { initiativeGroup: true } }
+        flags: { sotc: { initiativeGroup: true } }
       });
     }
 
@@ -229,7 +229,7 @@ export class SotCCombat extends Combat {
 // ── spawnSpeedDiceClones ──────────────────────────────────────────────────────
 async function spawnSpeedDiceClones(item, newCount) {
   if (item.system?.condition !== "passive") return;
-  if (item.system?.target    !== "number of speed dice") return;
+  if (item.system?.target !== "number of speed dice") return;
   if (!game.combat?.active) return;
   if (newCount <= 0) return;
 
@@ -247,38 +247,38 @@ async function spawnSpeedDiceClones(item, newCount) {
     if (!game.user.isGM || !game.users.activeGM?.isSelf) return;
   }
 
-  const sign     = item.system.effect === "Decrease" ? -1 : 1;
-  const flat     = Number(item.system.potency_flat ?? 0);
-  const pot      = Number(item.system.potency ?? 0);
-  const extra    = (flat + pot * newCount) * sign;
-  const base     = Number(actor.system.speed_dice?.num_dice ?? 1);
+  const sign = item.system.effect === "Decrease" ? -1 : 1;
+  const flat = Number(item.system.potency_flat ?? 0);
+  const pot = Number(item.system.potency ?? 0);
+  const extra = (flat + pot * newCount) * sign;
+  const base = Number(actor.system.speed_dice?.num_dice ?? 1);
   const expected = base + extra;
   const existing = game.combat.combatants.filter(c => c.actorId === actor.id);
   const toCreate = Math.max(0, expected - existing.length);
 
   if (toCreate <= 0) return;
 
-  const base_combatant  = existing.find(c => !c.flags?.sotc?.isSpeedDieClone);
+  const base_combatant = existing.find(c => !c.flags?.sotc?.isSpeedDieClone);
   if (!base_combatant) return;
 
   const actorFormula = actor.system?.speed_dice?.dice_size ?? CONFIG.Combat.initiative.formula ?? "1d6";
 
   for (let i = 0; i < toCreate; i++) {
     const cloneIndex = existing.length + i;
-    let initiative   = null;
+    let initiative = null;
     try {
       const roll = await new Roll(actorFormula).evaluate({ async: true });
-      initiative  = Math.max(1, roll.total);
+      initiative = Math.max(1, roll.total);
     } catch (err) {
       console.warn(`sotc | spawnSpeedDiceClones: could not roll initiative for clone:`, err);
     }
     await game.combat.createEmbeddedDocuments("Combatant", [{
-      actorId:    actor.id,
-      tokenId:    base_combatant.tokenId,
-      hidden:     false,
+      actorId: actor.id,
+      tokenId: base_combatant.tokenId,
+      hidden: false,
       initiative,
-      name:       `${base_combatant.name} #${cloneIndex + 1}`,
-      flags:      { sotc: { isSpeedDieClone: true, speedDieIndex: cloneIndex } }
+      name: `${base_combatant.name} #${cloneIndex + 1}`,
+      flags: { sotc: { isSpeedDieClone: true, speedDieIndex: cloneIndex } }
     }]);
     ui.combat?.render();
   }
@@ -310,7 +310,7 @@ async function syncStatusItemEffect(item) {
   _syncLocks.add(lockKey);
 
   try {
-    const count       = Number(item.system?.count ?? 0);
+    const count = Number(item.system?.count ?? 0);
     const allMatching = actor.effects.filter(e =>
       e.flags?.sotc?.statusItemId === item.id || e.statuses?.has(item.id)
     );
@@ -331,12 +331,12 @@ async function syncStatusItemEffect(item) {
 
     if (count > 0 && !existing) {
       await actor.createEmbeddedDocuments("ActiveEffect", [{
-        name:     item.name,
-        icon:     item.img,
+        name: item.name,
+        icon: item.img,
         statuses: [item.id],
-        origin:   item.uuid,
+        origin: item.uuid,
         transfer: false,
-        flags:    { sotc: { statusItemId: item.id } }
+        flags: { sotc: { statusItemId: item.id } }
       }]);
       canvas.tokens?.placeables
         .filter(t => t.actor?.id === actor.id)
@@ -374,8 +374,13 @@ function drawCountBadges(token) {
     if (!item || item.type !== "status") continue;
     if (item.system.condition === "stagger_like") continue;
 
-    const count = Number(item.system.count ?? 0);
-    if (count <= 0) continue;
+    const isInstant = ["haste", "bind"].includes(item.name.toLowerCase());
+    const total_count = Number(item.system.count ?? 0);
+    if (total_count <= 0) continue;
+
+    let active_count = isInstant ? total_count : Number(item.flags?.sotc?.round_start_count ?? 0);
+    active_count = Math.min(active_count, total_count);
+    const pending_count = total_count - active_count;
 
     const sprite = sprites.find(s => {
       const src = s.texture?.baseTexture?.resource?.src;
@@ -384,21 +389,38 @@ function drawCountBadges(token) {
     if (!sprite) continue;
 
     for (const child of [...sprite.children]) {
-      if (child.name === "sotc-count") sprite.removeChild(child);
+      if (child.name === "sotc-count" || child.name === "sotc-pending-count") sprite.removeChild(child);
     }
 
     const bounds = sprite.getLocalBounds();
-    const badge  = new PIXI.Text(String(count), {
-      fontSize:        Math.floor(bounds.width * 0.4),
-      fill:            0xffffff,
-      stroke:          0x000000,
-      strokeThickness: 4,
-      fontWeight:      "900"
-    });
-    badge.name = "sotc-count";
-    badge.anchor.set(1, 1);
-    badge.position.set(bounds.width, bounds.height);
-    sprite.addChild(badge);
+    
+    if (active_count > 0) {
+      const badge = new PIXI.Text(String(active_count), {
+        fontSize: Math.floor(bounds.width * 0.4),
+        fill: 0xffffff,
+        stroke: 0x000000,
+        strokeThickness: 4,
+        fontWeight: "900"
+      });
+      badge.name = "sotc-count";
+      badge.anchor.set(1, 1);
+      badge.position.set(bounds.width, bounds.height);
+      sprite.addChild(badge);
+    }
+
+    if (pending_count > 0) {
+      const pendingBadge = new PIXI.Text("+" + pending_count, {
+        fontSize: Math.floor(bounds.width * 0.35),
+        fill: 0xffffff,
+        stroke: 0x000000,
+        strokeThickness: 4,
+        fontWeight: "900"
+      });
+      pendingBadge.name = "sotc-pending-count";
+      pendingBadge.anchor.set(0, 0);
+      pendingBadge.position.set(0, 0);
+      sprite.addChild(pendingBadge);
+    }
   }
 }
 
@@ -417,7 +439,7 @@ async function _notifySafeguard(actor, item, newCount, stacksDelta) {
   // Falls back to newCount in case of legacy callers (e.g. createItem with prevCount=0).
   stacksDelta = stacksDelta ?? newCount;
 
-  const sgCount    = Number(safeguard.system.count);
+  const sgCount = Number(safeguard.system.count);
   const statusType = item.system?.types ?? "status";
   const OWNER_LEVEL = 3;
 
@@ -429,7 +451,7 @@ async function _notifySafeguard(actor, item, newCount, stacksDelta) {
     )
   );
 
-  const sgIcon     = `<img src="systems/sotc/assets/statuses/Safeguard.png" style="width:20px;height:20px;border:none;vertical-align:middle;margin-right:5px;">`;
+  const sgIcon = `<img src="systems/sotc/assets/statuses/Safeguard.png" style="width:20px;height:20px;border:none;vertical-align:middle;margin-right:5px;">`;
   const statusIcon = item.img ? `<img src="${item.img}" style="width:16px;height:16px;border:none;vertical-align:middle;margin-right:4px;">` : "";
 
   await ChatMessage.create({
@@ -458,7 +480,7 @@ async function _notifySafeguard(actor, item, newCount, stacksDelta) {
       </div>`,
     whisper: whisperTo,
     speaker: { alias: actor.name },
-    flags:   { sotc: { safeguardPromptActorId: actor.id } }
+    flags: { sotc: { safeguardPromptActorId: actor.id } }
   });
 }
 
@@ -481,22 +503,22 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
 
   for (const li of root.querySelectorAll(".combatant")) {
     const combatantId = li.dataset.combatantId;
-    const combatant   = game.combat.combatants.get(combatantId);
-    const isUsed      = combatant.flags?.sotc?.used;
-    const controls    = li.querySelector(".combatant-controls");
+    const combatant = game.combat.combatants.get(combatantId);
+    const isUsed = combatant.flags?.sotc?.used;
+    const controls = li.querySelector(".combatant-controls");
     if (!controls) continue;
 
     const usedButton = document.createElement("a");
     usedButton.classList.add("combatant-control");
-    usedButton.dataset.control  = "toggleUsedSpeedDie";
-    usedButton.dataset.tooltip  = "Toggle Speed Dice as Used/Unused";
+    usedButton.dataset.control = "toggleUsedSpeedDie";
+    usedButton.dataset.tooltip = "Toggle Speed Dice as Used/Unused";
     usedButton.setAttribute("aria-label", "Toggle Speed Dice as Used/Unused");
     usedButton.setAttribute("role", "button");
 
-    const icon   = document.createElement("img");
-    icon.src     = isUsed ? "systems/sotc/assets/icons/used.png" : "systems/sotc/assets/icons/unused.png";
-    icon.alt     = "Used Speed Die";
-    icon.style.width  = "20px";
+    const icon = document.createElement("img");
+    icon.src = isUsed ? "systems/sotc/assets/icons/used.png" : "systems/sotc/assets/icons/unused.png";
+    icon.alt = "Used Speed Die";
+    icon.style.width = "20px";
     icon.style.height = "20px";
     icon.classList.add("used_and_unused_icons");
     usedButton.appendChild(icon);
@@ -508,7 +530,7 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
       });
     } else {
       usedButton.style.pointerEvents = "none";
-      usedButton.style.opacity       = "0.0";
+      usedButton.style.opacity = "0.0";
     }
 
     controls.appendChild(usedButton);
@@ -535,10 +557,10 @@ Hooks.on("createCombatant", async (combatant, options, userId) => {
     i.system?.target === "number of speed dice" &&
     Number(i.system?.count) > 0
   )) {
-    const sign  = s.system.effect === "Decrease" ? -1 : 1;
-    const flat  = Number(s.system.potency_flat ?? 0);
-    const pot   = Number(s.system.potency ?? 0);
-    const cnt   = Number(s.system.count ?? 0);
+    const sign = s.system.effect === "Decrease" ? -1 : 1;
+    const flat = Number(s.system.potency_flat ?? 0);
+    const pot = Number(s.system.potency ?? 0);
+    const cnt = Number(s.system.count ?? 0);
     extra_dice += (flat + pot * cnt) * sign;
   }
 
@@ -546,9 +568,9 @@ Hooks.on("createCombatant", async (combatant, options, userId) => {
   const temp_num_dice = base_num_dice + extra_dice;
   if (temp_num_dice <= 1) return;
 
-  const combat        = combatant.parent;
-  const actorId       = actor.id;
-  const tokenId       = combatant.tokenId;
+  const combat = combatant.parent;
+  const actorId = actor.id;
+  const tokenId = combatant.tokenId;
   const combatantName = combatant.name;
   if (!combat) return;
 
@@ -556,17 +578,17 @@ Hooks.on("createCombatant", async (combatant, options, userId) => {
     for (let i = 1; i < temp_num_dice; i++) {
       await combat.createEmbeddedDocuments("Combatant", [{
         actorId, tokenId,
-        hidden:     false,
+        hidden: false,
         initiative: null,
-        name:       `${combatantName} #${i + 1}`,
-        flags:      { sotc: { isSpeedDieClone: true, speedDieIndex: i } }
+        name: `${combatantName} #${i + 1}`,
+        flags: { sotc: { isSpeedDieClone: true, speedDieIndex: i } }
       }]);
     }
   }, 50);
 });
 
 Hooks.on("deleteCombatant", async (combatant, options, userId) => {
-  const combat  = combatant.parent;
+  const combat = combatant.parent;
   const actorId = combatant.actorId;
   const tokenId = combatant.tokenId;
   if (!actorId || !tokenId) return;
@@ -574,7 +596,7 @@ Hooks.on("deleteCombatant", async (combatant, options, userId) => {
   const toRemove = combat.combatants.filter(c =>
     c.actorId === actorId &&
     c.tokenId === tokenId &&
-    c.id      !== combatant.id &&
+    c.id !== combatant.id &&
     c.getFlag("sotc", "isSpeedDieClone")
   );
   if (toRemove.length > 0) {
@@ -584,9 +606,9 @@ Hooks.on("deleteCombatant", async (combatant, options, userId) => {
 
 Hooks.on("preRollInitiative", (combat, combatants, rollOptions) => {
   for (let combatant of combatants) {
-    const actor       = combatant.actor;
+    const actor = combatant.actor;
     const actorFormula = actor?.system?.speed_dice?.dice_size;
-    const actorType   = actor?.system?.initiative_type;
+    const actorType = actor?.system?.initiative_type;
 
     if (actorFormula && Roll.validate(actorFormula)) {
       rollOptions.formula = actorType === "player"
@@ -599,13 +621,13 @@ Hooks.on("preRollInitiative", (combat, combatants, rollOptions) => {
 Hooks.on("combatRound", async (combat, round) => {
   if (!game.user.isGM || !game.users.activeGM?.isSelf) return;
 
-  const combatant_updates  = [];
-  const processed_actors   = new Set();
+  const combatant_updates = [];
+  const processed_actors = new Set();
 
   for (let c of combat.combatants) {
-    const actor_updates      = {};
+    const actor_updates = {};
     const actor_stag_updates = {};
-    const actor              = c.actor;
+    const actor = c.actor;
 
     if (!actor?.system?.speed_dice) continue;
 
@@ -626,8 +648,8 @@ Hooks.on("combatRound", async (combat, round) => {
     const modifiers = actor.system.modifiers ?? {};
     if (!modifiers.null_speed_dice) {
       combatant_updates.push({
-        _id:             c.id,
-        initiative:      null,
+        _id: c.id,
+        initiative: null,
         "flags.sotc.used": false
       });
     }
@@ -640,46 +662,61 @@ Hooks.on("combatRound", async (combat, round) => {
       i.type === "status" && i.system.condition !== "stagger_like" && i.system.count > 0
     );
 
+    const zero_statuses = actor.items.filter(i => 
+      i.type === "status" && i.system.condition !== "stagger_like" && (i.system.count ?? 0) <= 0 && (i.flags?.sotc?.round_start_count ?? 0) > 0
+    );
+    for (const z of zero_statuses) {
+      status_updates.push({ _id: z.id, "flags.sotc.round_start_count": 0 });
+    }
+
     const pre_flush_speed_dice_ids = new Set(
       statuses
         .filter(i => i.system?.condition === "passive" && i.system?.target === "number of speed dice")
         .map(i => i.id)
     );
 
-    let accumulated_hp_delta  = 0, accumulated_hp_min   = 0;
-    let accumulated_stg_delta = 0, accumulated_stg_min  = 0;
-    let hp_affected  = false;
+    let accumulated_hp_delta = 0, accumulated_hp_min = 0;
+    let accumulated_stg_delta = 0, accumulated_stg_min = 0;
+    let hp_affected = false;
     let stg_affected = false;
 
     for (const status of statuses) {
-      if (["haste", "bind"].includes(status.name.toLowerCase())) continue;
-
-      const _use_duration = status.system.use_duration ?? false;
-      const _stagger_end  = Number(status.system.stagger_end ?? 0);
-      const _duration     = Number(status.system.stagger_duration ?? 0);
-      const _condition    = status.system.condition;
-
-      if (_use_duration && _duration > 0 && _stagger_end > 0 && round.round >= _stagger_end &&
-          (_condition === "passive" || _condition === "stagger_like")) {
-        status_updates.push({ _id: status.id, "system.count": 0, "system.stagger_end": null });
+      if (["haste", "bind"].includes(status.name.toLowerCase())) {
+        status_updates.push({ _id: status.id, "flags.sotc.round_start_count": Number(status.system.count ?? 0) });
         continue;
       }
+
+      const _use_duration = status.system.use_duration ?? false;
+      const _stagger_end = Number(status.system.stagger_end ?? 0);
+      const _duration = Number(status.system.stagger_duration ?? 0);
+      const _condition = status.system.condition;
+
+      if (_use_duration && _duration > 0 && _stagger_end > 0 && round.round >= _stagger_end &&
+        (_condition === "passive" || _condition === "stagger_like")) {
+        status_updates.push({ _id: status.id, "system.count": 0, "system.stagger_end": null, "flags.sotc.round_start_count": 0 });
+        continue;
+      }
+
+      const current_count = Number(status.system.count ?? 0);
+      let active_count = Number(status.flags?.sotc?.round_start_count ?? 0);
+      active_count = Math.min(active_count, current_count);
+      const pending_count = current_count - active_count;
+      let new_active_count = active_count;
 
       const endOp = status.system.scene_end_effect?.operator;
 
       if (status.name.toLowerCase() === "sinking" || status.name.toLowerCase() === "sinking deluge") {
-        const inflict      = Number(status.system.count ?? 0);
+        const inflict = active_count;
         if (inflict > 0) {
-          const curr         = Number(actor.system.stagger.value ?? 0);
-          const maxs         = Number(actor.system.stagger.max   ?? curr);
+          const curr = Number(actor.system.stagger.value ?? 0);
+          const maxs = Number(actor.system.stagger.max ?? curr);
           const sinkingFloor = Number(status.system.scene_end_effect?.min_resource_limit ?? 0);
           actor_stag_updates["system.stagger.value"] = Math.max(sinkingFloor, Math.min(maxs, curr - inflict));
-          const newc = Math.floor(inflict / 2);
-          status_updates.push({ _id: status.id, "system.count": newc });
+          new_active_count = Math.floor(inflict / 2);
 
-          const isPlayer        = actor.system.initiative_type === "player";
+          const isPlayer = actor.system.initiative_type === "player";
           const playerEPEnabled = game.settings.get("sotc", "sinkingPlayerEmotionPoints");
-          const enemyEPEnabled  = game.settings.get("sotc", "sinkingEnemyEmotionPoints");
+          const enemyEPEnabled = game.settings.get("sotc", "sinkingEnemyEmotionPoints");
           if ((isPlayer && playerEPEnabled) || (!isPlayer && enemyEPEnabled)) {
             const cure = Number(actor.system.emotion ?? 0);
             actor_updates["system.emotion"] = Math.max(0, cure - Math.floor(inflict / 2));
@@ -688,30 +725,41 @@ Hooks.on("combatRound", async (combat, round) => {
       } else if (endOp && endOp !== "maintain") {
         const effect_type = status.system.effect;
         const flat_change = Number(status.system.potency_flat ?? 0);
-        const potency     = Number(status.system.potency ?? 1);
-        const count       = Number(status.system.count ?? 0);
-        const delta       = count * potency + flat_change;
-        const sign        = effect_type === "Decrease" ? -1 : 1;
-        const minLimit    = Number(status.system.scene_end_effect?.min_resource_limit ?? 0);
+        const potency = Number(status.system.potency ?? 1);
+        const count = active_count;
+        const delta = count * potency + flat_change;
+        const sign = effect_type === "Decrease" ? -1 : 1;
+        const minLimit = Number(status.system.scene_end_effect?.min_resource_limit ?? 0);
 
-        if (status.system.target === "hp" || status.system.target === "hp_stagger") {
-          accumulated_hp_delta += delta * sign;
-          accumulated_hp_min    = Math.max(accumulated_hp_min, minLimit);
-          hp_affected = true;
-        }
-        if (status.system.target === "stagger" || status.system.target === "hp_stagger") {
-          accumulated_stg_delta += delta * sign;
-          accumulated_stg_min    = Math.max(accumulated_stg_min, minLimit);
-          stg_affected = true;
+        if (count > 0 || flat_change > 0) {
+          if (status.system.target === "hp" || status.system.target === "hp_stagger") {
+            accumulated_hp_delta += delta * sign;
+            accumulated_hp_min = Math.max(accumulated_hp_min, minLimit);
+            hp_affected = true;
+          }
+          if (status.system.target === "stagger" || status.system.target === "hp_stagger") {
+            accumulated_stg_delta += delta * sign;
+            accumulated_stg_min = Math.max(accumulated_stg_min, minLimit);
+            stg_affected = true;
+          }
         }
       }
 
-      if (endOp === "clear") {
-        status_updates.push({ _id: status.id, "system.count": 0 });
-      } else if (endOp && endOp !== "maintain") {
-        const new_count = applyOperator(status.system.count, endOp, status.system.scene_end_effect.variable);
-        status_updates.push({ _id: status.id, "system.count": Math.max(new_count, 0) });
+      if (status.name.toLowerCase() !== "sinking" && status.name.toLowerCase() !== "sinking deluge") {
+        if (endOp === "clear") {
+          new_active_count = 0;
+        } else if (endOp && endOp !== "maintain") {
+          new_active_count = applyOperator(active_count, endOp, status.system.scene_end_effect.variable);
+          new_active_count = Math.max(new_active_count, 0);
+        }
       }
+
+      const next_round_count = new_active_count + pending_count;
+      status_updates.push({ 
+        _id: status.id, 
+        "system.count": next_round_count, 
+        "flags.sotc.round_start_count": next_round_count 
+      });
     }
 
     if (hp_affected) {
@@ -743,7 +791,7 @@ Hooks.on("combatRound", async (combat, round) => {
         }
         expected_extra = Math.max(0, expected_extra);
 
-        const base_num_dice   = Number(actor.system.speed_dice?.num_dice ?? 1);
+        const base_num_dice = Number(actor.system.speed_dice?.num_dice ?? 1);
         const expected_clones = base_num_dice - 1 + expected_extra;
         const clones = combat.combatants.filter(c =>
           c.actorId === actor.id && c.getFlag("sotc", "isSpeedDieClone")
@@ -769,10 +817,10 @@ Hooks.on("combatRound", async (combat, round) => {
 
     const light = actor.system.light;
     if (!modifiers.null_light_regen) {
-      const current    = Number(light.value) || 0;
+      const current = Number(light.value) || 0;
       const base_regen = Number(light.light_regen) || 0;
-      const regen      = base_regen + inline_light_regen_mod;
-      const max        = Number(light.max) || current;
+      const regen = base_regen + inline_light_regen_mod;
+      const max = Number(light.max) || current;
 
       if (regen !== 0 && current < max) {
         actor_updates["system.light.value"] = Math.min(current + regen, max);
@@ -790,11 +838,11 @@ Hooks.on("combatRound", async (combat, round) => {
 
 Hooks.on("deleteCombat", async (combat) => {
   const restoreStagger = game.settings.get("sotc", "restoreStaggerOnCombatEnd");
-  const restoreLight   = game.settings.get("sotc", "restoreLightOnCombatEnd");
+  const restoreLight = game.settings.get("sotc", "restoreLightOnCombatEnd");
   if (!restoreStagger && !restoreLight) return;
   if (!game.user.isGM || !game.users.activeGM?.isSelf) return;
 
-  const processed    = new Set();
+  const processed = new Set();
   const restoredNames = [];
 
   for (const c of combat.combatants) {
@@ -805,7 +853,7 @@ Hooks.on("deleteCombat", async (combat) => {
 
     const updates = {};
     if (restoreStagger) { const max = actor.system.stagger?.max ?? 0; if (max > 0) updates["system.stagger.value"] = max; }
-    if (restoreLight)   { const max = actor.system.light?.max   ?? 0; if (max > 0) updates["system.light.value"]   = max; }
+    if (restoreLight) { const max = actor.system.light?.max ?? 0; if (max > 0) updates["system.light.value"] = max; }
 
     if (Object.keys(updates).length) {
       await actor.update(updates);
@@ -816,7 +864,7 @@ Hooks.on("deleteCombat", async (combat) => {
   if (restoredNames.length) {
     const parts = [];
     if (restoreStagger) parts.push("stagger");
-    if (restoreLight)   parts.push("light");
+    if (restoreLight) parts.push("light");
     ChatMessage.create({
       content: `<div style="background:#12111a; border:1px solid #3a3050; border-radius:6px; padding:10px 12px; font-family:'Signika',sans-serif;">
         <strong style="color:#c9a227;">Combat Ended</strong>
@@ -830,11 +878,11 @@ Hooks.on("deleteCombat", async (combat) => {
 
 // ── TokenHUD override (status icon click → increment/decrement count) ─────────
 Hooks.once("ready", () => {
-  const TokenHUD         = foundry.applications.hud.TokenHUD;
-  const originalToggle   = TokenHUD.prototype._onToggleEffect;
+  const TokenHUD = foundry.applications.hud.TokenHUD;
+  const originalToggle = TokenHUD.prototype._onToggleEffect;
 
   TokenHUD.prototype._onToggleEffect = async function (event) {
-    const img      = event.currentTarget;
+    const img = event.currentTarget;
     const statusId = img?.dataset?.statusId;
     if (!statusId) return originalToggle.call(this, event);
 
@@ -850,7 +898,7 @@ Hooks.once("ready", () => {
     event.preventDefault();
     event.stopImmediatePropagation();
 
-    const current      = Number(item.system.count ?? 0);
+    const current = Number(item.system.count ?? 0);
     const isRightClick = event.button === 2;
 
     if (item.system.condition === "stagger_like") {
@@ -866,8 +914,8 @@ Hooks.once("ready", () => {
   };
 
   // Patch Token.drawEffects to add count badges
-  const Token                = foundry.canvas.placeables.Token;
-  const originalDrawEffects  = Token.prototype.drawEffects;
+  const Token = foundry.canvas.placeables.Token;
+  const originalDrawEffects = Token.prototype.drawEffects;
   Token.prototype.drawEffects = async function (...args) {
     await originalDrawEffects.apply(this, args);
     const token = this;
@@ -898,20 +946,20 @@ Hooks.on("renderTokenHUD", (hud, html, data) => {
 
     for (const eff of CONFIG.statusEffects) {
       if (!SOTC_BASE_EFFECTS.has(eff.id)) continue;
-      const img         = document.createElement("img");
+      const img = document.createElement("img");
       img.classList.add("effect-control");
-      img.src           = eff.icon;
-      img.title         = eff.label;
+      img.src = eff.icon;
+      img.title = eff.label;
       img.dataset.statusId = eff.id;
       if (activeStatuses.has(eff.id)) img.classList.add("active");
       effectsPanel.appendChild(img);
     }
 
     for (const item of actor.items.filter(i => i.type === "status")) {
-      const img         = document.createElement("img");
+      const img = document.createElement("img");
       img.classList.add("effect-control");
-      img.src           = item.img;
-      img.title         = item.name;
+      img.src = item.img;
+      img.title = item.name;
       img.dataset.statusId = item.id;
       if (activeStatuses.has(item.id)) img.classList.add("active");
       effectsPanel.appendChild(img);
@@ -936,6 +984,13 @@ Hooks.on("createToken", async (tokenDoc, options, userId) => {
 
 Hooks.on("preUpdateItem", (item, changes) => {
   if (item.type !== "status") return;
+  
+  if (changes.system?.count !== undefined && Number(changes.system.count) <= 0) {
+    if (!changes.flags) changes.flags = {};
+    if (!changes.flags.sotc) changes.flags.sotc = {};
+    changes.flags.sotc.round_start_count = 0;
+  }
+
   if (!["debuff", "ailment"].includes(item.system?.types)) return;
   if (changes.system?.count === undefined) return;
   _safeguardPrevCounts.set(item.id, Number(item.system?.count ?? 0));
@@ -965,12 +1020,12 @@ Hooks.on("updateItem", async (item, changes) => {
   const countChanged = changes.system?.count !== undefined;
 
   if (countChanged) {
-    const newCount  = Number(changes.system.count);
+    const newCount = Number(changes.system.count);
     const prevCount = _safeguardPrevCounts.get(item.id) ?? Number(item.system?.count ?? 0);
     _safeguardPrevCounts.delete(item.id);
     const actor = item.actor;
     if (newCount > prevCount && newCount > 0 && actor &&
-        ["debuff", "ailment"].includes(item.system?.types)) {
+      ["debuff", "ailment"].includes(item.system?.types)) {
       await _notifySafeguard(actor, item, newCount, newCount - prevCount);
     }
   }
@@ -980,14 +1035,14 @@ Hooks.on("updateItem", async (item, changes) => {
   }
 
   if (countChanged) {
-    const newCount       = Number(changes.system.count);
-    const condition      = item.system.condition;
-    const use_duration   = item.system.use_duration ?? false;
-    const duration       = Number(item.system.stagger_duration ?? 0);
+    const newCount = Number(changes.system.count);
+    const condition = item.system.condition;
+    const use_duration = item.system.use_duration ?? false;
+    const duration = Number(item.system.stagger_duration ?? 0);
     const alreadyStamped = Number(item.system.stagger_end ?? 0) > 0;
 
     if (use_duration && newCount > 0 && duration > 0 && !alreadyStamped &&
-        (condition === "passive" || condition === "stagger_like")) {
+      (condition === "passive" || condition === "stagger_like")) {
       const applied_round = game.combat?.round ?? 0;
       await item.update({ "system.stagger_end": applied_round + duration }, { diff: true });
     }
@@ -1024,17 +1079,17 @@ Hooks.on("updateItem", async (item, changes) => {
           const sign = s.system.effect === "Decrease" ? -1 : 1;
           expected_extra += (Number(s.system.potency_flat ?? 0) + Number(s.system.potency ?? 0) * Number(s.system.count ?? 0)) * sign;
         }
-        expected_extra    = Math.max(0, expected_extra);
-        const base_num_dice   = Number(actor.system.speed_dice?.num_dice ?? 1);
+        expected_extra = Math.max(0, expected_extra);
+        const base_num_dice = Number(actor.system.speed_dice?.num_dice ?? 1);
         const expected_clones = base_num_dice - 1 + expected_extra;
         const clones = game.combat.combatants.filter(c =>
           c.actorId === actor.id && c.getFlag("sotc", "isSpeedDieClone")
         );
         if (clones.length > expected_clones) {
-          const excess   = clones.slice(expected_clones);
+          const excess = clones.slice(expected_clones);
           const validIds = excess.map(c => c.id).filter(id => game.combat.combatants.has(id));
           if (validIds.length && game.user.isGM && game.users.activeGM?.isSelf) {
-            await game.combat.deleteEmbeddedDocuments("Combatant", validIds).catch(() => {});
+            await game.combat.deleteEmbeddedDocuments("Combatant", validIds).catch(() => { });
           }
         }
       }
@@ -1069,7 +1124,7 @@ Hooks.on("deleteItem", async (item) => {
 
   if (
     item.system?.condition === "passive" &&
-    item.system?.target    === "number of speed dice" &&
+    item.system?.target === "number of speed dice" &&
     game.combat?.active &&
     (designatedOwner
       ? game.user.id === designatedOwner.id
@@ -1085,17 +1140,17 @@ Hooks.on("deleteItem", async (item) => {
       const sign = s.system.effect === "Decrease" ? -1 : 1;
       expected_extra += (Number(s.system.potency_flat ?? 0) + Number(s.system.potency ?? 0) * Number(s.system.count ?? 0)) * sign;
     }
-    expected_extra    = Math.max(0, expected_extra);
-    const base_num_dice   = Number(actor.system.speed_dice?.num_dice ?? 1);
+    expected_extra = Math.max(0, expected_extra);
+    const base_num_dice = Number(actor.system.speed_dice?.num_dice ?? 1);
     const expected_clones = base_num_dice - 1 + expected_extra;
     const clones = game.combat.combatants.filter(c =>
       c.actorId === actor.id && c.getFlag("sotc", "isSpeedDieClone")
     );
     if (clones.length > expected_clones) {
-      const excess   = clones.slice(expected_clones);
+      const excess = clones.slice(expected_clones);
       const validIds = excess.map(c => c.id).filter(id => game.combat.combatants.has(id));
       if (validIds.length && game.user.isGM && game.users.activeGM?.isSelf) {
-        await game.combat.deleteEmbeddedDocuments("Combatant", validIds).catch(() => {});
+        await game.combat.deleteEmbeddedDocuments("Combatant", validIds).catch(() => { });
       }
     }
   }

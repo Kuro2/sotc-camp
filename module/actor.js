@@ -69,9 +69,16 @@ export class SotCActor extends Actor {
     const statuses = this.items.filter(i => i.type === "status" && (i.system.condition === "passive") && (i.system.count > 0));
 
     for (const status of statuses) {
-      const { effect, target, potency_flat = 0, potency = 0, count = 0 } = status.system;
+      const isInstant = ["haste", "bind"].includes(status.name.toLowerCase());
+      const total_count = Number(status.system.count ?? 0);
+      let active_count = isInstant ? total_count : Number(status.flags?.sotc?.round_start_count ?? 0);
+      active_count = Math.min(active_count, total_count);
+
+      if (active_count <= 0) continue;
+
+      const { effect, target, potency_flat = 0, potency = 0 } = status.system;
       const sign = effect === "Increase" ? 1 : -1;
-      const bonus = (potency_flat + potency * count) * sign;
+      const bonus = (potency_flat + potency * active_count) * sign;
 
       switch (target) {
         case "all dice power": modifiers.all_mod += bonus; break;

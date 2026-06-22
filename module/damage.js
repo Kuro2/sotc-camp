@@ -49,17 +49,17 @@ function applyAffinities(actor, dieBase, baseDmg, baseStagger) {
   const m = actor.system.modifiers;
   if (dieBase === "slash") {
     return [
-      Math.max(0, baseDmg     + (m.slash_damage_affinity  ?? 0)),
+      Math.max(0, baseDmg + (m.slash_damage_affinity ?? 0)),
       Math.max(0, baseStagger + (m.slash_stagger_affinity ?? 0))
     ];
   } else if (dieBase === "pierce") {
     return [
-      Math.max(0, baseDmg     + (m.pierce_damage_affinity  ?? 0)),
+      Math.max(0, baseDmg + (m.pierce_damage_affinity ?? 0)),
       Math.max(0, baseStagger + (m.pierce_stagger_affinity ?? 0))
     ];
   } else {
     return [
-      Math.max(0, baseDmg     + (m.blunt_damage_affinity  ?? 0)),
+      Math.max(0, baseDmg + (m.blunt_damage_affinity ?? 0)),
       Math.max(0, baseStagger + (m.blunt_stagger_affinity ?? 0))
     ];
   }
@@ -72,9 +72,9 @@ function applyAffinities(actor, dieBase, baseDmg, baseStagger) {
 async function applyStats(actor, { dmg = 0, stagger = 0, staggerGain = 0 } = {}) {
   if (!dmg && !stagger && !staggerGain) return;
   const delta = {};
-  if (dmg         > 0) delta.hp           = -dmg;
-  if (stagger     > 0) delta.stagger      = -stagger;
-  if (staggerGain > 0) delta.staggerGain  =  staggerGain;
+  if (dmg > 0) delta.hp = -dmg;
+  if (stagger > 0) delta.stagger = -stagger;
+  if (staggerGain > 0) delta.staggerGain = staggerGain;
   await game.sotc.updateActor(actor, delta);
 }
 
@@ -88,20 +88,20 @@ export async function openDamageWizard(payload) {
   const targets = Array.from(game.user.targets);
   if (!targets.length) return ui.notifications.warn("Select a target first!");
 
-  const token   = targets[0];
+  const token = targets[0];
   const dieBase = normaliseType(payload.dieType);
 
   const badgeColor = isOffensiveType(dieBase) ? "#7a1a1a"
-                   : dieBase === "block"       ? "#1a3f7a"
-                   :                             "#1a5e35";
+    : dieBase === "block" ? "#1a3f7a"
+      : "#1a5e35";
 
   const dieButtons = [
-    { value: "none",   label: "None",   icon: null,                                         color: "#444"    },
-    { value: "slash",  label: "Slash",  icon: "systems/sotc/assets/dice types/slash.png",  color: "#8b1a1a" },
+    { value: "none", label: "None", icon: null, color: "#444" },
+    { value: "slash", label: "Slash", icon: "systems/sotc/assets/dice types/slash.png", color: "#8b1a1a" },
     { value: "pierce", label: "Pierce", icon: "systems/sotc/assets/dice types/pierce.png", color: "#7a3a00" },
-    { value: "blunt",  label: "Blunt",  icon: "systems/sotc/assets/dice types/blunt.png",  color: "#5a4a00" },
-    { value: "block",  label: "Block",  icon: "systems/sotc/assets/dice types/block.png",  color: "#1a3f7a" },
-    { value: "evade",  label: "Evade",  icon: "systems/sotc/assets/dice types/evade.png",  color: "#1a5e35" },
+    { value: "blunt", label: "Blunt", icon: "systems/sotc/assets/dice types/blunt.png", color: "#5a4a00" },
+    { value: "block", label: "Block", icon: "systems/sotc/assets/dice types/block.png", color: "#1a3f7a" },
+    { value: "evade", label: "Evade", icon: "systems/sotc/assets/dice types/evade.png", color: "#1a5e35" },
   ];
 
   const btnHTML = dieButtons.map((b, i) => `
@@ -131,9 +131,9 @@ export async function openDamageWizard(payload) {
       "
     >
       ${b.icon
-        ? `<img src="${b.icon}" style="width:28px;height:28px;border:none;object-fit:contain;" />`
-        : `<span style="font-size:18px;line-height:28px;color:#888;">✕</span>`
-      }
+      ? `<img src="${b.icon}" style="width:28px;height:28px;border:none;object-fit:contain;" />`
+      : `<span style="font-size:18px;line-height:28px;color:#888;">✕</span>`
+    }
       ${b.label}
     </button>
   `).join("");
@@ -141,9 +141,9 @@ export async function openDamageWizard(payload) {
   const INPUT_STYLE = `background:#f5f0e8; color:#1a1a1a; border:1px solid #8a7a5a; border-radius:4px; padding:5px 8px; width:100%; box-sizing:border-box; font-size:14px; margin-top:3px;`;
   const LABEL_STYLE = `display:block; font-weight:600; color:#c9a227; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; margin-top:10px;`;
 
-  const _isOff     = isOffensiveType(normaliseType(payload.dieType));
-  const _tActor    = token.actor;
-  const _aActor    = resolveAttackerActor(payload);
+  const _isOff = isOffensiveType(normaliseType(payload.dieType));
+  const _tActor = token.actor;
+  const _aActor = resolveAttackerActor(payload);
   const _thornsItem = _isOff ? _tActor?.items.find(i =>
     i.type === "status" && i.system?.condition === "special" &&
     i.system?.special_trigger === "on_receive_damage" && Number(i.system?.count ?? 0) > 0
@@ -152,7 +152,7 @@ export async function openDamageWizard(payload) {
     i.type === "status" && i.name.toLowerCase() === "bleed" && Number(i.system?.count ?? 0) > 0
   ) : null;
   const _thornCount = _thornsItem ? Number(_thornsItem.system.count) : 0;
-  const _bleedCount = _bleedItem  ? Number(_bleedItem.system.count)  : 0;
+  const _bleedCount = _bleedItem ? Number(_bleedItem.system.count) : 0;
 
   const critCheckboxHtml = _thornsItem ? [
     '<label style="' + LABEL_STYLE + ' flex-direction:row; align-items:center; gap:8px; margin-top:10px;">',
@@ -236,16 +236,16 @@ export async function openDamageWizard(payload) {
   `;
 
   new Dialog({
-    title:   `Damage Wizard — ${payload.itemName}`,
+    title: `Damage Wizard — ${payload.itemName}`,
     content,
     buttons: {
       resolve: {
-        icon:     '<i class="fas fa-bolt"></i>',
-        label:    "Resolve",
+        icon: '<i class="fas fa-bolt"></i>',
+        label: "Resolve",
         callback: html => resolveDamage(payload, html, token)
       },
       cancel: {
-        icon:  '<i class="fas fa-times"></i>',
+        icon: '<i class="fas fa-times"></i>',
         label: "Cancel"
       }
     },
@@ -260,29 +260,29 @@ async function resolveDamage(payload, html, targetToken) {
     return ui.notifications.warn("The Damage Wizard is currently restricted to the GM.");
   }
 
-  const targetActor   = targetToken.actor;
-  const mod           = Number(html.find('[name="mod"]').val()                 || 0);
-  const defenderType  =        html.find('[name="defender_die_type"]').val()   ?? "none";
-  const defenderBase  = Number(html.find('[name="defender_die"]').val()        || 0);
-  const defenderMod   = Number(html.find('[name="defender_mod"]').val()        || 0);
-  const defenderRoll  = defenderBase + defenderMod;
-  const isCrit        =        html.find('[name="is_crit"]').prop("checked")        ?? false;
-  const suppressBleed =        html.find('[name="suppress_bleed"]').prop("checked") ?? false;
+  const targetActor = targetToken.actor;
+  const mod = Number(html.find('[name="mod"]').val() || 0);
+  const defenderType = html.find('[name="defender_die_type"]').val() ?? "none";
+  const defenderBase = Number(html.find('[name="defender_die"]').val() || 0);
+  const defenderMod = Number(html.find('[name="defender_mod"]').val() || 0);
+  const defenderRoll = defenderBase + defenderMod;
+  const isCrit = html.find('[name="is_crit"]').prop("checked") ?? false;
+  const suppressBleed = html.find('[name="suppress_bleed"]').prop("checked") ?? false;
 
   const attackPower = payload.total + mod;
 
-  const clashResult = defenderRoll === 0         ? "unopposed"
-                    : attackPower > defenderRoll  ? "win"
-                    : attackPower === defenderRoll ? "tie"
-                    : "lose";
+  const clashResult = defenderRoll === 0 ? "unopposed"
+    : attackPower > defenderRoll ? "win"
+      : attackPower === defenderRoll ? "tie"
+        : "lose";
 
-  const dieBase        = normaliseType(payload.dieType);
-  const isOffensive    = isOffensiveType(dieBase);
-  const isBlock        = dieBase === "block";
-  const isEvade        = dieBase === "evade";
+  const dieBase = normaliseType(payload.dieType);
+  const isOffensive = isOffensiveType(dieBase);
+  const isBlock = dieBase === "block";
+  const isEvade = dieBase === "evade";
   const defIsOffensive = isOffensiveType(defenderType);
-  const defIsBlock     = defenderType === "block" || defenderType === "counter-block";
-  const defIsEvade     = defenderType === "evade" || defenderType === "counter-evade";
+  const defIsBlock = defenderType === "block" || defenderType === "counter-block";
+  const defIsEvade = defenderType === "evade" || defenderType === "counter-evade";
 
   const attackerActor = resolveAttackerActor(payload);
 
@@ -297,16 +297,16 @@ async function resolveDamage(payload, html, targetToken) {
       case "unopposed": {
         [tDmg, tStagger] = applyAffinities(targetActor, dieBase, attackPower, attackPower);
         if (clashResult === "win" && defIsBlock) { tDmg = Math.max(0, tDmg - defenderRoll); tStagger = Math.max(0, tStagger - defenderRoll); }
-        if (clashResult === "win" && defIsEvade)  tStagger = Math.max(0, tStagger - defenderRoll);
+        if (clashResult === "win" && defIsEvade) tStagger = Math.max(0, tStagger - defenderRoll);
         resultLabel = clashResult === "win"
           ? `Clash Win — dealt ${tDmg} damage and ${tStagger} stagger to ${targetActor.name}`
           : `Unopposed — dealt ${tDmg} damage and ${tStagger} stagger to ${targetActor.name}`;
         break;
       }
-      case "tie":  { resultLabel = "Clash Tie — no effect."; break; }
+      case "tie": { resultLabel = "Clash Tie — no effect."; break; }
       case "lose": {
         if (defIsBlock) {
-          aStagger    = Math.max(0, defenderRoll - attackPower);
+          aStagger = Math.max(0, defenderRoll - attackPower);
           resultLabel = `Clash Lose vs Block — ${targetActor.name}'s block dealt ${aStagger} stagger to ${attackerActor?.name ?? "attacker"} (no HP damage)`;
         } else if (defIsEvade) {
           resultLabel = `Clash Lose vs Evade — ${targetActor.name}'s evade recycled! No damage. They may re-deploy it.`;
@@ -331,21 +331,21 @@ async function resolveDamage(payload, html, targetToken) {
           tDmg = net; tStagger = net;
           resultLabel = `Block Clash Win vs Offensive — dealt ${tDmg} damage and ${tStagger} stagger to ${targetActor.name}`;
         } else {
-          tStagger    = Math.max(0, attackPower - defenderRoll);
+          tStagger = Math.max(0, attackPower - defenderRoll);
           resultLabel = `Block Clash Win — dealt ${tStagger} stagger to ${targetActor.name}`;
         }
         break;
       }
-      case "tie":  { resultLabel = "Block Clash Tie — no effect."; break; }
+      case "tie": { resultLabel = "Block Clash Tie — no effect."; break; }
       case "lose": {
         if (defIsOffensive && attackerActor) {
-          const defBase  = normaliseType(defenderType);
+          const defBase = normaliseType(defenderType);
           const netPower = Math.max(0, defenderRoll - attackPower);
           [aDmg, aStagger] = applyAffinities(attackerActor, defBase, netPower, netPower);
           resultLabel = `Block Clash Lose vs Offensive — blocked ${attackPower}, ${attackerActor.name} takes net ${aDmg} damage and ${aStagger} stagger`;
         } else if (defIsEvade) {
           tStaggerGain = Math.max(0, defenderRoll - attackPower);
-          resultLabel  = `Block Clash Lose vs Evade — ${targetActor.name}'s evade wins, they regain ${tStaggerGain} stagger`;
+          resultLabel = `Block Clash Lose vs Evade — ${targetActor.name}'s evade wins, they regain ${tStaggerGain} stagger`;
         } else {
           resultLabel = "Block Clash Lose — no effect.";
         }
@@ -367,25 +367,25 @@ async function resolveDamage(payload, html, targetToken) {
           resultLabel = `Evade Clash Win vs Offensive — die recycled! No other Clash Win effects trigger.`;
         } else {
           aStaggerGain = Math.max(0, attackPower - defenderRoll);
-          resultLabel  = `Evade Clash Win vs Defensive — ${attackerActor?.name ?? "Evader"} regains ${aStaggerGain} stagger`;
+          resultLabel = `Evade Clash Win vs Defensive — ${attackerActor?.name ?? "Evader"} regains ${aStaggerGain} stagger`;
         }
         break;
       }
-      case "tie":  { resultLabel = "Evade Clash Tie — no effect."; break; }
+      case "tie": { resultLabel = "Evade Clash Tie — no effect."; break; }
       case "lose": {
         if (defIsOffensive && attackerActor) {
-          const defBase     = normaliseType(defenderType);
-          const netStagger  = Math.max(0, defenderRoll - attackPower);
-          const [rawDmg]       = applyAffinities(attackerActor, defBase, defenderRoll, 0);
+          const defBase = normaliseType(defenderType);
+          const netStagger = Math.max(0, defenderRoll - attackPower);
+          const [rawDmg] = applyAffinities(attackerActor, defBase, defenderRoll, 0);
           const [, affStagger] = applyAffinities(attackerActor, defBase, 0, netStagger);
           aDmg = rawDmg; aStagger = affStagger;
           resultLabel = `Evade Clash Lose vs Offensive — evade absorbed ${attackPower} stagger, ${attackerActor.name} takes ${aDmg} HP and ${aStagger} stagger`;
         } else if (defIsBlock) {
-          aStagger    = Math.max(0, defenderRoll - attackPower);
+          aStagger = Math.max(0, defenderRoll - attackPower);
           resultLabel = `Evade Clash Lose vs Block — ${attackerActor?.name ?? "Evader"} takes ${aStagger} stagger`;
         } else if (defIsEvade) {
           tStaggerGain = Math.max(0, defenderRoll - attackPower);
-          resultLabel  = `Evade Clash Lose vs Evade — ${targetActor.name}'s evade wins, they regain ${tStaggerGain} stagger`;
+          resultLabel = `Evade Clash Lose vs Evade — ${targetActor.name}'s evade wins, they regain ${tStaggerGain} stagger`;
         } else {
           resultLabel = "Evade Clash Lose — no effect.";
         }
@@ -400,28 +400,28 @@ async function resolveDamage(payload, html, targetToken) {
   }
 
   // ── Snapshot pre-apply state for undo ────────────────────────────────────────
-  const attackerToken  = attackerActor
+  const attackerToken = attackerActor
     ? canvas.tokens?.placeables?.find(t => t.actor?.id === attackerActor.id) ?? null
     : null;
-  const freshAttacker  = attackerToken ? attackerToken.actor : attackerActor;
+  const freshAttacker = attackerToken ? attackerToken.actor : attackerActor;
 
   const snapshot = {
     target: {
       actorId: targetActor.id,
       tokenId: targetToken?.id ?? null,
-      hp:      targetActor.system.health.value  ?? 0,
+      hp: targetActor.system.health.value ?? 0,
       stagger: targetActor.system.stagger.value ?? 0,
     },
     attacker: freshAttacker ? {
       actorId: freshAttacker.id,
       tokenId: attackerToken?.id ?? null,
-      hp:      freshAttacker.system.health.value  ?? 0,
+      hp: freshAttacker.system.health.value ?? 0,
       stagger: freshAttacker.system.stagger.value ?? 0,
     } : null,
   };
 
   // ── Apply stats ───────────────────────────────────────────────────────────────
-  await applyStats(targetActor,   { dmg: tDmg, stagger: tStagger, staggerGain: tStaggerGain });
+  await applyStats(targetActor, { dmg: tDmg, stagger: tStagger, staggerGain: tStaggerGain });
   if (attackerActor && (aDmg > 0 || aStagger > 0 || aStaggerGain > 0)) {
     await applyStats(attackerActor, { dmg: aDmg, stagger: aStagger, staggerGain: aStaggerGain });
   }
@@ -476,8 +476,8 @@ async function resolveDamage(payload, html, targetToken) {
     });
     for (const a of epActors) {
       const currentEp = Number(a.system.emotion ?? 0);
-      const maxEp     = Number(a.system.emotion_max ?? a.system.emotionMax ?? 99);
-      const newEp     = Math.min(maxEp, currentEp + 1);
+      const maxEp = Number(a.system.emotion_max ?? a.system.emotionMax ?? 99);
+      const newEp = Math.min(maxEp, currentEp + 1);
       if (newEp > currentEp) {
         await game.sotc.updateActor(a, { emotion: newEp - currentEp });
         epStatLines.push(`<span style="color:#c9a227;">+1 EP → ${a.name}</span>`);
@@ -487,27 +487,27 @@ async function resolveDamage(payload, html, targetToken) {
 
   // ── Build chat result ─────────────────────────────────────────────────────────
   const clashLabel = { win: "Clash Win", tie: "Clash Tie", lose: "Clash Lose", unopposed: "Unopposed" }[clashResult];
-  const clashColor = { win: "#4caf7d",   tie: "#c9a227",  lose: "#e05050",    unopposed: "#aaa"       }[clashResult];
+  const clashColor = { win: "#4caf7d", tie: "#c9a227", lose: "#e05050", unopposed: "#aaa" }[clashResult];
 
   const statLines = [];
-  if (tDmg         > 0) statLines.push(`<span style="color:#e05050;">${tDmg} HP → ${targetActor.name}</span>`);
-  if (tStagger      > 0) statLines.push(`<span style="color:#e0943a;">${tStagger} stagger → ${targetActor.name}</span>`);
-  if (tStaggerGain  > 0) statLines.push(`<span style="color:#4caf7d;">+${tStaggerGain} stagger regained by ${targetActor.name}</span>`);
-  if (aDmg          > 0) statLines.push(`<span style="color:#e05050;">${aDmg} HP → ${attackerActor?.name}</span>`);
-  if (aStagger      > 0) statLines.push(`<span style="color:#e0943a;">${aStagger} stagger → ${attackerActor?.name}</span>`);
-  if (aStaggerGain  > 0) statLines.push(`<span style="color:#4caf7d;">+${aStaggerGain} stagger regained by ${attackerActor?.name}</span>`);
+  if (tDmg > 0) statLines.push(`<span style="color:#e05050;">${tDmg} HP → ${targetActor.name}</span>`);
+  if (tStagger > 0) statLines.push(`<span style="color:#e0943a;">${tStagger} stagger → ${targetActor.name}</span>`);
+  if (tStaggerGain > 0) statLines.push(`<span style="color:#4caf7d;">+${tStaggerGain} stagger regained by ${targetActor.name}</span>`);
+  if (aDmg > 0) statLines.push(`<span style="color:#e05050;">${aDmg} HP → ${attackerActor?.name}</span>`);
+  if (aStagger > 0) statLines.push(`<span style="color:#e0943a;">${aStagger} stagger → ${attackerActor?.name}</span>`);
+  if (aStaggerGain > 0) statLines.push(`<span style="color:#4caf7d;">+${aStaggerGain} stagger regained by ${attackerActor?.name}</span>`);
   statLines.push(...epStatLines, ...bleedStatLines, ...thornsStatLines);
 
   const snapshotJson = JSON.stringify(snapshot).replace(/'/g, "&#39;");
-  const hasEffect    = tDmg || tStagger || tStaggerGain || aDmg || aStagger || aStaggerGain || thornsStatLines.length;
+  const hasEffect = tDmg || tStagger || tStaggerGain || aDmg || aStagger || aStaggerGain || thornsStatLines.length;
 
   const previewStats = [];
-  if (tDmg         > 0) previewStats.push(`<span style="color:#e05050;">${tDmg} HP</span>`);
-  if (tStagger      > 0) previewStats.push(`<span style="color:#e0943a;">${tStagger} stagger</span>`);
-  if (aDmg          > 0) previewStats.push(`<span style="color:#e05050;">${aDmg} HP → ${attackerActor?.name}</span>`);
-  if (aStagger      > 0) previewStats.push(`<span style="color:#e0943a;">${aStagger} stagger → ${attackerActor?.name}</span>`);
-  if (tStaggerGain  > 0) previewStats.push(`<span style="color:#4caf7d;">+${tStaggerGain} stagger back</span>`);
-  if (aStaggerGain  > 0) previewStats.push(`<span style="color:#4caf7d;">+${aStaggerGain} stagger back</span>`);
+  if (tDmg > 0) previewStats.push(`<span style="color:#e05050;">${tDmg} HP</span>`);
+  if (tStagger > 0) previewStats.push(`<span style="color:#e0943a;">${tStagger} stagger</span>`);
+  if (aDmg > 0) previewStats.push(`<span style="color:#e05050;">${aDmg} HP → ${attackerActor?.name}</span>`);
+  if (aStagger > 0) previewStats.push(`<span style="color:#e0943a;">${aStagger} stagger → ${attackerActor?.name}</span>`);
+  if (tStaggerGain > 0) previewStats.push(`<span style="color:#4caf7d;">+${tStaggerGain} stagger back</span>`);
+  if (aStaggerGain > 0) previewStats.push(`<span style="color:#4caf7d;">+${aStaggerGain} stagger back</span>`);
 
   const previewPill = `
     <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
@@ -536,15 +536,15 @@ async function resolveDamage(payload, html, targetToken) {
     : null;
 
   if (existing) {
-    const parser    = new DOMParser();
-    const doc       = parser.parseFromString(existing.content, "text/html");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(existing.content, "text/html");
     const container = doc.querySelector(".sotc-clash-rows");
-    const summary   = doc.querySelector(".sotc-clash-summary");
+    const summary = doc.querySelector(".sotc-clash-summary");
     if (container) {
       container.insertAdjacentHTML("beforeend", dieRow);
       if (summary) summary.innerHTML = previewPill;
       container.dataset.collapsed = "true";
-      container.style.display     = "none";
+      container.style.display = "none";
       await existing.update({ content: doc.body.innerHTML });
     }
   } else {
@@ -563,7 +563,7 @@ async function resolveDamage(payload, html, targetToken) {
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker(),
       content: headerContent,
-      flags:   { sotc: { clashGroup: sourceId ?? foundry.utils.randomID() } }
+      flags: { sotc: { clashGroup: sourceId ?? foundry.utils.randomID() } }
     });
   }
 }
@@ -572,7 +572,7 @@ async function resolveDamage(payload, html, targetToken) {
 async function _applyStatusButton(ev, speakerActorId) {
   ev.preventDefault();
   const statusName = ev.currentTarget.dataset.statusName;
-  const rawCount   = ev.currentTarget.dataset.statusCount;
+  const rawCount = ev.currentTarget.dataset.statusCount;
 
   const speakerActor = speakerActorId ? game.actors.get(speakerActorId) : null;
   const sourceStatus =
@@ -592,13 +592,13 @@ async function _applyStatusButton(ev, speakerActorId) {
   } else {
     stacksToAdd = await new Promise(resolve => {
       new Dialog({
-        title:   `Apply ${sourceStatus.name}`,
+        title: `Apply ${sourceStatus.name}`,
         content: `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
           <label style="flex-shrink:0;">Stacks to apply:</label>
           <input id="sotc-stack-input" type="number" min="1" value="1" style="width:60px;" autofocus />
         </div>`,
         buttons: {
-          apply:  { icon: '<i class="fas fa-check"></i>',  label: "Apply",  callback: h => { const v = Number(h.find("#sotc-stack-input").val()); resolve(v > 0 ? v : 1); } },
+          apply: { icon: '<i class="fas fa-check"></i>', label: "Apply", callback: h => { const v = Number(h.find("#sotc-stack-input").val()); resolve(v > 0 ? v : 1); } },
           cancel: { icon: '<i class="fas fa-times"></i>', label: "Cancel", callback: () => resolve(null) }
         },
         default: "apply"
@@ -616,7 +616,7 @@ async function _applyStatusButton(ev, speakerActorId) {
       await existing.update({ "system.count": newCount });
       ui.notifications.info(`${sourceStatus.name} on ${targetActor.name} → ${newCount}.`);
     } else {
-      const newItem        = sourceStatus.toObject();
+      const newItem = sourceStatus.toObject();
       newItem.system.count = stacksToAdd;
       await targetActor.createEmbeddedDocuments("Item", [newItem]);
       ui.notifications.info(`Applied ${stacksToAdd}x ${sourceStatus.name} to ${targetActor.name}.`);
@@ -628,7 +628,7 @@ async function _applyStatusButton(ev, speakerActorId) {
 
 export const _egoPassiveTracker = {
   entriesByActor: new Map(),
-  _tooltip:       null,
+  _tooltip: null,
 
   _makeId() { return foundry.utils.randomID(8); },
 
@@ -674,7 +674,7 @@ export const _egoPassiveTracker = {
       if (game.user.isGM && game.users.activeGM?.isSelf) {
         try {
           let stored = {};
-          try { stored = JSON.parse(game.settings.get("sotc", "egoPassiveData") || "{}"); } catch {}
+          try { stored = JSON.parse(game.settings.get("sotc", "egoPassiveData") || "{}"); } catch { }
           if (entries.length) stored[actorId] = entries;
           else delete stored[actorId];
           await game.settings.set("sotc", "egoPassiveData", JSON.stringify(stored));
@@ -710,7 +710,7 @@ export const _egoPassiveTracker = {
   },
 
   async _printToChat(actorId) {
-    const actor   = game.actors.get(actorId)
+    const actor = game.actors.get(actorId)
       ?? (canvas?.tokens?.placeables ?? []).find(t => t.actor?.id === actorId)?.actor;
     const entries = this.entriesByActor.get(actorId) ?? [];
     if (!entries.length) return;
@@ -753,7 +753,7 @@ export const _egoPassiveTracker = {
   _cleanToken(token) {
     if (!token?._egoPassiveMarkers) return;
     token._egoPassiveMarkers.forEach(m => {
-      try { m.pixi?.destroy({ children: true }); m.destroy?.({ children: true }); } catch (e) {}
+      try { m.pixi?.destroy({ children: true }); m.destroy?.({ children: true }); } catch (e) { }
     });
     token._egoPassiveMarkers = [];
   },
@@ -764,13 +764,13 @@ export const _egoPassiveTracker = {
   },
 
   _renderForActor(actorId) {
-    const token   = this._getToken(actorId);
+    const token = this._getToken(actorId);
     if (!token) return;
     this._cleanToken(token);
     const entries = this.entriesByActor.get(actorId) ?? [];
     if (entries.length === 0) return;
 
-    const R     = 16;
+    const R = 16;
     const badge = new PIXI.Container();
 
     const bg = new PIXI.Graphics();
@@ -780,7 +780,7 @@ export const _egoPassiveTracker = {
     bg.endFill();
     badge.addChild(bg);
 
-    const tex  = PIXI.Texture.from("systems/sotc/assets/statuses/Limbus/E.G.O%20Passives.png");
+    const tex = PIXI.Texture.from("systems/sotc/assets/statuses/Limbus/E.G.O%20Passives.png");
     const icon = new PIXI.Sprite(tex);
     icon.anchor.set(0.5);
     icon.width = icon.height = R * 1.4;
@@ -816,11 +816,11 @@ export const _egoPassiveTracker = {
   },
   _updatePanelPos() {
     if (!this._panel) return;
-    const s     = this._worldToScreen(this._panelWorldX, this._panelWorldY);
+    const s = this._worldToScreen(this._panelWorldX, this._panelWorldY);
     const scale = Math.max(0.1, Math.min(1, canvas.stage.worldTransform.a * 0.5));
-    this._panel.style.left            = s.x + "px";
-    this._panel.style.top             = s.y + "px";
-    this._panel.style.transform       = `scale(${scale})`;
+    this._panel.style.left = s.x + "px";
+    this._panel.style.top = s.y + "px";
+    this._panel.style.transform = `scale(${scale})`;
     this._panel.style.transformOrigin = "top left";
   },
 
@@ -831,12 +831,12 @@ export const _egoPassiveTracker = {
     if (this._panel && this._panelActorId === actorId) { this._hidePanel(); return; }
     this._hidePanel();
     this._panelActorId = actorId;
-    const world        = this._screenToWorld(screenX + 20, screenY - 40);
-    this._panelWorldX  = world.x;
-    this._panelWorldY  = world.y;
+    const world = this._screenToWorld(screenX + 20, screenY - 40);
+    this._panelWorldX = world.x;
+    this._panelWorldY = world.y;
 
     const panel = document.createElement("div");
-    panel.id    = "sotc-ego-panel";
+    panel.id = "sotc-ego-panel";
     panel.style.cssText = `
       position:fixed; z-index:25; pointer-events:all;
       min-width:260px; max-width:320px;
@@ -845,7 +845,7 @@ export const _egoPassiveTracker = {
       font-family:'Signika',serif; user-select:none;
     `;
 
-    const actor  = this._getToken(actorId)?.actor;
+    const actor = this._getToken(actorId)?.actor;
     const header = document.createElement("div");
     header.style.cssText = "display:flex;align-items:center;gap:6px;padding:8px 10px;background:#2a1545;border-radius:8px 8px 0 0;cursor:grab;border-bottom:1px solid #5a3a8a;";
     header.innerHTML = `
@@ -860,9 +860,9 @@ export const _egoPassiveTracker = {
       if (ev.target.closest("a")) return;
       if (ev.button !== 0) return;
       const rect = panel.getBoundingClientRect();
-      const ox   = ev.clientX - rect.left, oy = ev.clientY - rect.top;
+      const ox = ev.clientX - rect.left, oy = ev.clientY - rect.top;
       const onMove = e => {
-        const sx = Math.max(0, Math.min(window.innerWidth  - panel.offsetWidth,  e.clientX - ox));
+        const sx = Math.max(0, Math.min(window.innerWidth - panel.offsetWidth, e.clientX - ox));
         const sy = Math.max(0, Math.min(window.innerHeight - panel.offsetHeight, e.clientY - oy));
         panel.style.left = sx + "px"; panel.style.top = sy + "px";
         const w = this._screenToWorld(sx, sy);
@@ -878,7 +878,7 @@ export const _egoPassiveTracker = {
     header.querySelector("#sotc-ego-close").addEventListener("click", ev => { ev.stopPropagation(); this._hidePanel(); });
 
     const body = document.createElement("div");
-    body.id    = "sotc-ego-panel-body";
+    body.id = "sotc-ego-panel-body";
     body.style.cssText = "padding:8px 10px;max-height:400px;overflow-y:auto;";
     panel.appendChild(body);
 
@@ -928,7 +928,7 @@ export const _egoPassiveTracker = {
   _hidePanel() {
     if (this._panelTicker) { canvas?.app?.ticker?.remove(this._panelTicker); this._panelTicker = null; }
     this._panel?.remove();
-    this._panel        = null;
+    this._panel = null;
     this._panelActorId = null;
   },
 
@@ -982,12 +982,12 @@ export const _egoPassiveTracker = {
 
 export const _enemyRevealTracker = {
   entriesByActor: new Map(),
-  _panel:         null,
-  _panelActorId:  null,
-  _panelWorldX:   0,
-  _panelWorldY:   0,
-  _panelTicker:   null,
-  _stageHandler:  null,
+  _panel: null,
+  _panelActorId: null,
+  _panelWorldX: 0,
+  _panelWorldY: 0,
+  _panelTicker: null,
+  _stageHandler: null,
 
   _makeId() { return foundry.utils.randomID(8); },
 
@@ -1002,7 +1002,7 @@ export const _enemyRevealTracker = {
     this._save(actorId);
     // Broadcast to all other clients so their badges update immediately
     game.socket.emit("system.sotc", {
-      type:    "enemyRevealSync",
+      type: "enemyRevealSync",
       actorId,
       entries: this.entriesByActor.get(actorId)
     });
@@ -1021,7 +1021,7 @@ export const _enemyRevealTracker = {
     if (this._panelActorId === actorId) this._rebuildPanelBody(actorId);
     this._saveAll();
     game.socket.emit("system.sotc", {
-      type:    "enemyRevealSync",
+      type: "enemyRevealSync",
       actorId,
       entries: this.entriesByActor.get(actorId) ?? []
     });
@@ -1033,7 +1033,7 @@ export const _enemyRevealTracker = {
     this._hidePanel();
     this._saveAll();
     game.socket.emit("system.sotc", {
-      type:    "enemyRevealSync",
+      type: "enemyRevealSync",
       actorId,
       entries: []
     });
@@ -1043,7 +1043,7 @@ export const _enemyRevealTracker = {
     if (!game.user.isGM) return;
     try {
       let data = {};
-      try { data = JSON.parse(game.settings.get("sotc", "enemyRevealData") || "{}"); } catch {}
+      try { data = JSON.parse(game.settings.get("sotc", "enemyRevealData") || "{}"); } catch { }
       const entries = this.entriesByActor.get(actorId) ?? [];
       if (entries.length) data[actorId] = entries;
       else delete data[actorId];
@@ -1098,12 +1098,12 @@ export const _enemyRevealTracker = {
 
     // Fallback for linked tokens where actor.id === world actor id
     return p.find(t => t.actor?.id === actorId)
-        ?? p.find(t => t.document?.actorId === actorId);
+      ?? p.find(t => t.document?.actorId === actorId);
   },
 
   _cleanToken(token) {
     if (!token?._enemyRevealMarkers) return;
-    token._enemyRevealMarkers.forEach(m => { try { m.destroy({ children: true }); } catch (e) {} });
+    token._enemyRevealMarkers.forEach(m => { try { m.destroy({ children: true }); } catch (e) { } });
     token._enemyRevealMarkers = [];
   },
 
@@ -1119,16 +1119,16 @@ export const _enemyRevealTracker = {
     const entries = this.entriesByActor.get(actorId) ?? [];
     if (entries.length === 0) return;
 
-    const R     = 14;
+    const R = 14;
     const badge = new PIXI.Container();
-    const bg    = new PIXI.Graphics();
+    const bg = new PIXI.Graphics();
     bg.beginFill(0x1a0a0a, 0.92);
     bg.lineStyle(1.5, 0xe05050, 1);
     bg.drawCircle(0, 0, R);
     bg.endFill();
     badge.addChild(bg);
 
-    const tex  = PIXI.Texture.from("systems/sotc/assets/statuses/Limbus/Taunt.png");
+    const tex = PIXI.Texture.from("systems/sotc/assets/statuses/Limbus/Taunt.png");
     const icon = new PIXI.Sprite(tex);
     icon.anchor.set(0.5);
     icon.width = icon.height = R * 1.4;
@@ -1164,11 +1164,11 @@ export const _enemyRevealTracker = {
   },
   _updatePanelPos() {
     if (!this._panel) return;
-    const s     = this._worldToScreen(this._panelWorldX, this._panelWorldY);
+    const s = this._worldToScreen(this._panelWorldX, this._panelWorldY);
     const scale = Math.max(0.1, Math.min(1, canvas.stage.worldTransform.a * 0.5));
-    this._panel.style.left            = s.x + "px";
-    this._panel.style.top             = s.y + "px";
-    this._panel.style.transform       = `scale(${scale})`;
+    this._panel.style.left = s.x + "px";
+    this._panel.style.top = s.y + "px";
+    this._panel.style.transform = `scale(${scale})`;
     this._panel.style.transformOrigin = "top left";
   },
 
@@ -1176,12 +1176,12 @@ export const _enemyRevealTracker = {
     if (this._panel && this._panelActorId === actorId) { this._hidePanel(); return; }
     this._hidePanel();
     this._panelActorId = actorId;
-    const world        = this._screenToWorld(screenX + 20, screenY - 40);
-    this._panelWorldX  = world.x;
-    this._panelWorldY  = world.y;
+    const world = this._screenToWorld(screenX + 20, screenY - 40);
+    this._panelWorldX = world.x;
+    this._panelWorldY = world.y;
 
     const panel = document.createElement("div");
-    panel.id    = "sotc-enemy-panel";
+    panel.id = "sotc-enemy-panel";
     panel.style.cssText = `
       position:fixed; z-index:25; pointer-events:all;
       min-width:260px; max-width:320px;
@@ -1190,7 +1190,7 @@ export const _enemyRevealTracker = {
       font-family:'Signika',serif; user-select:none;
     `;
 
-    const actor  = this._getToken(actorId)?.actor;
+    const actor = this._getToken(actorId)?.actor;
     const header = document.createElement("div");
     header.style.cssText = "display:flex;align-items:center;gap:6px;padding:8px 10px;background:#2a0f0f;border-radius:8px 8px 0 0;cursor:grab;border-bottom:1px solid #5a2020;";
     header.innerHTML = `
@@ -1204,9 +1204,9 @@ export const _enemyRevealTracker = {
       if (ev.target.closest("a")) return;
       if (ev.button !== 0) return;
       const rect = panel.getBoundingClientRect();
-      const ox   = ev.clientX - rect.left, oy = ev.clientY - rect.top;
+      const ox = ev.clientX - rect.left, oy = ev.clientY - rect.top;
       const onMove = e => {
-        const sx = Math.max(0, Math.min(window.innerWidth  - panel.offsetWidth,  e.clientX - ox));
+        const sx = Math.max(0, Math.min(window.innerWidth - panel.offsetWidth, e.clientX - ox));
         const sy = Math.max(0, Math.min(window.innerHeight - panel.offsetHeight, e.clientY - oy));
         panel.style.left = sx + "px"; panel.style.top = sy + "px";
         const w = this._screenToWorld(sx, sy);
@@ -1218,10 +1218,10 @@ export const _enemyRevealTracker = {
     });
 
     header.querySelector("#enemy-clear-all").addEventListener("click", ev => { ev.stopPropagation(); this.clearAll(actorId); });
-    header.querySelector("#enemy-close").addEventListener("click",     ev => { ev.stopPropagation(); this._hidePanel(); });
+    header.querySelector("#enemy-close").addEventListener("click", ev => { ev.stopPropagation(); this._hidePanel(); });
 
-    const body    = document.createElement("div");
-    body.id       = "sotc-enemy-panel-body";
+    const body = document.createElement("div");
+    body.id = "sotc-enemy-panel-body";
     body.style.cssText = "padding:8px 10px;max-height:400px;overflow-y:auto;";
     panel.appendChild(body);
 
@@ -1249,27 +1249,27 @@ export const _enemyRevealTracker = {
       return;
     }
 
-    const enrich   = game.sotc?.enrichModWithStatusIcons;
+    const enrich = game.sotc?.enrichModWithStatusIcons;
     const entryActor = game.actors.get(actorId)
       ?? (canvas?.tokens?.placeables ?? []).find(t => t.actor?.id === actorId)?.actor;
 
     const categories = [
-      { key: "skill",   label: "Attacks",     color: "#e07070", entries: entries.filter(e => e.type === "skill")   },
-      { key: "passive", label: "Passives",    color: "#c9a227", entries: entries.filter(e => e.type === "passive") },
-      { key: "ego",     label: "EGO Passives", color: "#9a7abf", entries: entries.filter(e => e.type === "ego")    },
+      { key: "skill", label: "Attacks", color: "#e07070", entries: entries.filter(e => e.type === "skill") },
+      { key: "passive", label: "Passives", color: "#c9a227", entries: entries.filter(e => e.type === "passive") },
+      { key: "ego", label: "EGO Passives", color: "#9a7abf", entries: entries.filter(e => e.type === "ego") },
     ];
 
     for (const cat of categories) {
       if (!cat.entries.length) continue;
-      const catHeader        = document.createElement("div");
+      const catHeader = document.createElement("div");
       catHeader.style.cssText = `font-size:10px;font-weight:900;color:${cat.color};letter-spacing:0.1em;padding:6px 0 3px;border-bottom:1px solid ${cat.color}44;margin-bottom:4px;`;
-      catHeader.textContent  = cat.label;
+      catHeader.textContent = cat.label;
       body.appendChild(catHeader);
 
       for (const entry of cat.entries) {
-        const row          = document.createElement("div");
-        row.style.cssText  = "display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #1a0808;";
-        row.innerHTML      = `
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #1a0808;";
+        row.innerHTML = `
           <img src="${entry.skillImg || 'icons/svg/mystery-man.svg'}" style="width:28px;height:28px;border-radius:3px;border:1px solid #5a2020;object-fit:cover;flex-shrink:0;">
           <div style="flex:1;min-width:0;">
             <div style="font-size:12px;font-weight:700;color:#e8d9a0;margin-bottom:2px;" data-name></div>
@@ -1280,7 +1280,7 @@ export const _enemyRevealTracker = {
         const descEl = row.querySelector("[data-desc]");
         if (entry.description) {
           let parsed = null;
-          try { parsed = JSON.parse(entry.description); } catch (e) {}
+          try { parsed = JSON.parse(entry.description); } catch (e) { }
           if (parsed?.diceData !== undefined) {
             let html = "";
             const costParts = [];
@@ -1294,7 +1294,7 @@ export const _enemyRevealTracker = {
             if (parsed.diceData?.length) {
               for (const d of parsed.diceData) {
                 const imgTag = d.img ? `<img src="${d.img}" style="width:18px;height:18px;border:none;vertical-align:middle;margin-right:3px;">` : "";
-                let dieHtml  = `<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">${imgTag}<strong style="color:#e8d9a0;font-size:12px;">${d.result}</strong></div>`;
+                let dieHtml = `<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">${imgTag}<strong style="color:#e8d9a0;font-size:12px;">${d.result}</strong></div>`;
                 if (d.mods?.length) {
                   dieHtml += d.mods.map(mod => {
                     const enriched = enrich ? enrich(mod.trim(), entryActor) : mod.trim();
@@ -1333,7 +1333,7 @@ export const _enemyRevealTracker = {
   _hidePanel() {
     if (this._panelTicker) { canvas?.app?.ticker?.remove(this._panelTicker); this._panelTicker = null; }
     this._panel?.remove();
-    this._panel        = null;
+    this._panel = null;
     this._panelActorId = null;
   },
 
@@ -1404,11 +1404,11 @@ function _installSharedTrackerListener() {
           const b = marker.getBounds();
           if (b.width < 1) continue;
           if (pos.x >= b.x && pos.x <= b.x + b.width &&
-              pos.y >= b.y && pos.y <= b.y + b.height) {
+            pos.y >= b.y && pos.y <= b.y + b.height) {
             _egoPassiveTracker._showTooltipAt(actorId, b.x + b.width, b.y);
             return;
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     }
     for (const [actorId] of _enemyRevealTracker.entriesByActor) {
@@ -1419,11 +1419,11 @@ function _installSharedTrackerListener() {
           const b = marker.getBounds();
           if (b.width < 1) continue;
           if (pos.x >= b.x && pos.x <= b.x + b.width &&
-              pos.y >= b.y && pos.y <= b.y + b.height) {
+            pos.y >= b.y && pos.y <= b.y + b.height) {
             _enemyRevealTracker._showPanel(actorId, b.x + b.width, b.y);
             return;
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   };
@@ -1474,7 +1474,7 @@ Hooks.on("createActor", async (actor, options, userId) => {
   if (!pack) { console.error("SotC | Default statuses compendium not found."); return; }
 
   const statuses = await pack.getDocuments();
-  const items    = statuses.map(s => s.toObject());
+  const items = statuses.map(s => s.toObject());
 
   for (const item of items) {
     if (!item.system) continue;
@@ -1496,7 +1496,7 @@ Hooks.on("createActor", async (actor, options, userId) => {
 
     if (nameLower === "thorns") {
       if (!item.system.special_trigger) item.system.special_trigger = "on_receive_damage";
-      if (!item.system.condition)       item.system.condition       = "special";
+      if (!item.system.condition) item.system.condition = "special";
     }
   }
 
@@ -1511,146 +1511,146 @@ Hooks.on("renderChatMessage", (message, html) => {
   // ── Enemy reveal tracker — auto-add enemy skills/passives ──────────────────
   if (game.user.isGM && game.settings.get("sotc", "enemyRevealTrackerEnabled")) {
     if (_enemyRevealTracker._oldMessageIds && !_enemyRevealTracker._oldMessageIds.has(message.id)) {
-    const speakerActorId = message.speaker?.actor;
-    if (speakerActorId) {
-      const actor = game.actors.get(speakerActorId)
-        ?? (canvas?.tokens?.placeables ?? []).find(t => t.actor?.id === speakerActorId)?.actor;
-      if (actor && actor.system?.initiative_type !== "player") {
-        const tokenDoc   = (canvas?.tokens?.placeables ?? []).find(t => t.actor?.id === speakerActorId);
-        const baseActorId = tokenDoc?.document?.actorId ?? speakerActorId;
-        const passiveCard = html.find(".sotc-passive-card")[0];
+      const speakerActorId = message.speaker?.actor;
+      if (speakerActorId) {
+        const actor = game.actors.get(speakerActorId)
+          ?? (canvas?.tokens?.placeables ?? []).find(t => t.actor?.id === speakerActorId)?.actor;
+        if (actor && actor.system?.initiative_type !== "player") {
+          const tokenDoc = (canvas?.tokens?.placeables ?? []).find(t => t.actor?.id === speakerActorId);
+          const baseActorId = tokenDoc?.document?.actorId ?? speakerActorId;
+          const passiveCard = html.find(".sotc-passive-card")[0];
 
-        if (passiveCard) {
-          const passiveName    = passiveCard.querySelector("h3")?.textContent?.trim() ?? "Unknown Passive";
-          const passiveDetails = passiveCard.querySelector(".sotc-passive-details")?.textContent?.trim() ?? "";
-          const isEgoPassive   = message.content?.includes("sotc-passive-card") &&
-            actor.items.some(i => i.type === "ego" && i.system.passive_name === passiveName);
-          const tmpDiv         = document.createElement("div");
-          tmpDiv.innerHTML     = passiveDetails;
-          _enemyRevealTracker.add(baseActorId, {
-            skillName:   passiveName,
-            skillImg:    actor.img ?? "icons/svg/mystery-man.svg",
-            description: tmpDiv.textContent?.trim() ?? "",
-            type:        isEgoPassive ? "ego" : "passive",
-            tokenId:     tokenDoc?.id ?? null
-          });
-        } else {
-          const flavorEl   = document.createElement("div");
-          flavorEl.innerHTML = message.flavor ?? "";
-          const skillName  = flavorEl.querySelector("h3")?.textContent?.trim() ?? "";
-          if (skillName) {
-            // For unlinked tokens, actor is the synthetic actor whose items
-            // may not be fully populated. Fall back to the world actor (same
-            // actorId) for item lookup so the base formula is always found.
-            const worldActor = game.actors.get(speakerActorId)
-              ?? game.actors.get(tokenDoc?.document?.actorId)
-              ?? actor;
-            const skillItem = worldActor.items.find(i =>
-              (i.type === "skill" || i.type === "ego") && i.name === skillName
-            ) ?? actor.items.find(i =>
-              (i.type === "skill" || i.type === "ego") && i.name === skillName
-            );
-
-            let lightCost = "0";
-            flavorEl.querySelectorAll("p").forEach(p => {
-              if (p.textContent.includes("Light Cost:")) lightCost = p.textContent.replace("Light Cost:", "").trim();
+          if (passiveCard) {
+            const passiveName = passiveCard.querySelector("h3")?.textContent?.trim() ?? "Unknown Passive";
+            const passiveDetails = passiveCard.querySelector(".sotc-passive-details")?.textContent?.trim() ?? "";
+            const isEgoPassive = message.content?.includes("sotc-passive-card") &&
+              actor.items.some(i => i.type === "ego" && i.system.passive_name === passiveName);
+            const tmpDiv = document.createElement("div");
+            tmpDiv.innerHTML = passiveDetails;
+            _enemyRevealTracker.add(baseActorId, {
+              skillName: passiveName,
+              skillImg: actor.img ?? "icons/svg/mystery-man.svg",
+              description: tmpDiv.textContent?.trim() ?? "",
+              type: isEgoPassive ? "ego" : "passive",
+              tokenId: tokenDoc?.id ?? null
             });
+          } else {
+            const flavorEl = document.createElement("div");
+            flavorEl.innerHTML = message.flavor ?? "";
+            const skillName = flavorEl.querySelector("h3")?.textContent?.trim() ?? "";
+            if (skillName) {
+              // For unlinked tokens, actor is the synthetic actor whose items
+              // may not be fully populated. Fall back to the world actor (same
+              // actorId) for item lookup so the base formula is always found.
+              const worldActor = game.actors.get(speakerActorId)
+                ?? game.actors.get(tokenDoc?.document?.actorId)
+                ?? actor;
+              const skillItem = worldActor.items.find(i =>
+                (i.type === "skill" || i.type === "ego") && i.name === skillName
+              ) ?? actor.items.find(i =>
+                (i.type === "skill" || i.type === "ego") && i.name === skillName
+              );
 
-            // Build diceData preferring the skill item's stored formula so we
-            // always show the base formula (e.g. "1d6+5"), never the rolled
-            // result string (e.g. "1d6+5+4 = 12") that appears in roll messages.
-            const diceData = [];
-            if (skillItem) {
-              const rawDie = skillItem.system.dice?.die;
-              const dieArr = rawDie ? (Array.isArray(rawDie) ? rawDie : Object.values(rawDie)) : [];
-              dieArr.forEach(die => {
-                const m      = die.mods ?? {};
-                const modArr = Array.isArray(m) ? m : Object.values(m);
-                const imgSrc = `systems/sotc/assets/dice types/${die.type}.png`;
-                diceData.push({
-                  dieType: die.type,
-                  result:  die.formula ?? "?",   // base formula only, no roll result
-                  img:     imgSrc,
-                  mods:    modArr.filter(s => s?.trim())
-                });
-              });
-            } else {
-              // Fallback: parse from the rendered HTML when no skill item found.
-              // Strip roll result suffix (everything from the last "=" onward).
-              flavorEl.querySelectorAll("span").forEach(span => {
-                if (!span.className?.includes("die-color-")) return;
-                const img     = span.querySelector("img");
-                const dieType = img?.alt ?? img?.title ?? span.className.replace(/.*die-color-(\w+).*/, "$1") ?? "?";
-                const rawText = span.querySelector("strong")?.textContent?.trim() ?? "?";
-                // Keep only the part before " = " to strip the rolled total
-                const result  = rawText.split(/\s*=\s*/)[0].trim();
-                diceData.push({ dieType, result, img: img?.src ?? "", mods: [] });
-              });
-
-              flavorEl.querySelectorAll("a, button, .reroll-die, .resolve-die, .apply-status-from-chat").forEach(el => el.remove());
-
-              diceData.forEach((die, idx) => {
-                const span = [...flavorEl.querySelectorAll("span")].filter(s => s.className?.includes("die-color-"))[idx];
-                const mods = [];
-                if (span) span.querySelectorAll("em").forEach(em => { const t = em.textContent.trim(); if (t) mods.push(t); });
-                die.mods = mods;
-              });
-            }
-
-            const allModLines = [];
-            flavorEl.querySelectorAll("em").forEach(em => {
-              const t = em.textContent.trim();
-              if (t && !diceData.some(d => d.mods?.includes(t))) allModLines.push(t);
-            });
-
-            if (skillItem?.system.light_cost != null) lightCost = String(skillItem.system.light_cost);
-            let emotionCost = "";
-            if (skillItem?.system.emotion_cost) {
-              emotionCost = String(skillItem.system.emotion_cost);
-            } else {
+              let lightCost = "0";
               flavorEl.querySelectorAll("p").forEach(p => {
-                if (p.textContent.includes("Emotion Cost:")) emotionCost = p.textContent.replace(/.*Emotion Cost:\s*/, "").trim();
+                if (p.textContent.includes("Light Cost:")) lightCost = p.textContent.replace("Light Cost:", "").trim();
               });
-            }
 
-            // Skill-level module text (e.g. "[On Use] ...", "[After Use] ...")
-            // Read directly from the item when available — more reliable than
-            // parsing the rendered HTML which only contains die-level mods.
-            let skillModText = "";
-            if (skillItem) {
-              const rawMods = skillItem.system.skill_modules?.mods;
-              if (rawMods) {
-                const modsArr = Array.isArray(rawMods)
-                  ? rawMods
-                  : (typeof rawMods === "string"
+              // Build diceData preferring the skill item's stored formula so we
+              // always show the base formula (e.g. "1d6+5"), never the rolled
+              // result string (e.g. "1d6+5+4 = 12") that appears in roll messages.
+              const diceData = [];
+              if (skillItem) {
+                const rawDie = skillItem.system.dice?.die;
+                const dieArr = rawDie ? (Array.isArray(rawDie) ? rawDie : Object.values(rawDie)) : [];
+                dieArr.forEach(die => {
+                  const m = die.mods ?? {};
+                  const modArr = Array.isArray(m) ? m : Object.values(m);
+                  const imgSrc = `systems/sotc/assets/dice types/${die.type}.png`;
+                  diceData.push({
+                    dieType: die.type,
+                    result: die.formula ?? "?",   // base formula only, no roll result
+                    img: imgSrc,
+                    mods: modArr.filter(s => s?.trim())
+                  });
+                });
+              } else {
+                // Fallback: parse from the rendered HTML when no skill item found.
+                // Strip roll result suffix (everything from the last "=" onward).
+                flavorEl.querySelectorAll("span").forEach(span => {
+                  if (!span.className?.includes("die-color-")) return;
+                  const img = span.querySelector("img");
+                  const dieType = img?.alt ?? img?.title ?? span.className.replace(/.*die-color-(\w+).*/, "$1") ?? "?";
+                  const rawText = span.querySelector("strong")?.textContent?.trim() ?? "?";
+                  // Keep only the part before " = " to strip the rolled total
+                  const result = rawText.split(/\s*=\s*/)[0].trim();
+                  diceData.push({ dieType, result, img: img?.src ?? "", mods: [] });
+                });
+
+                flavorEl.querySelectorAll("a, button, .reroll-die, .resolve-die, .apply-status-from-chat").forEach(el => el.remove());
+
+                diceData.forEach((die, idx) => {
+                  const span = [...flavorEl.querySelectorAll("span")].filter(s => s.className?.includes("die-color-"))[idx];
+                  const mods = [];
+                  if (span) span.querySelectorAll("em").forEach(em => { const t = em.textContent.trim(); if (t) mods.push(t); });
+                  die.mods = mods;
+                });
+              }
+
+              const allModLines = [];
+              flavorEl.querySelectorAll("em").forEach(em => {
+                const t = em.textContent.trim();
+                if (t && !diceData.some(d => d.mods?.includes(t))) allModLines.push(t);
+              });
+
+              if (skillItem?.system.light_cost != null) lightCost = String(skillItem.system.light_cost);
+              let emotionCost = "";
+              if (skillItem?.system.emotion_cost) {
+                emotionCost = String(skillItem.system.emotion_cost);
+              } else {
+                flavorEl.querySelectorAll("p").forEach(p => {
+                  if (p.textContent.includes("Emotion Cost:")) emotionCost = p.textContent.replace(/.*Emotion Cost:\s*/, "").trim();
+                });
+              }
+
+              // Skill-level module text (e.g. "[On Use] ...", "[After Use] ...")
+              // Read directly from the item when available — more reliable than
+              // parsing the rendered HTML which only contains die-level mods.
+              let skillModText = "";
+              if (skillItem) {
+                const rawMods = skillItem.system.skill_modules?.mods;
+                if (rawMods) {
+                  const modsArr = Array.isArray(rawMods)
+                    ? rawMods
+                    : (typeof rawMods === "string"
                       ? rawMods.split("\n").map(s => s.trim()).filter(Boolean)
                       : Object.values(rawMods));
-                skillModText = modsArr.filter(m => m?.trim()).join(" | ");
+                  skillModText = modsArr.filter(m => m?.trim()).join(" | ");
+                }
               }
+              // Fall back to whatever the HTML gave us if item wasn't found
+              if (!skillModText) skillModText = allModLines.join(" | ");
+
+              const attackWeight = skillItem?.system.weight ?? 0;
+
+              const structuredDesc = JSON.stringify({
+                lightCost, emotionCost,
+                weight: attackWeight,
+                diceData,
+                description: skillModText
+              });
+
+              _enemyRevealTracker.add(baseActorId, {
+                skillName: skillName,
+                skillImg: skillItem?.img ?? actor.img ?? "icons/svg/mystery-man.svg",
+                description: structuredDesc,
+                type: "skill",
+                tokenId: tokenDoc?.id ?? null
+              });
             }
-            // Fall back to whatever the HTML gave us if item wasn't found
-            if (!skillModText) skillModText = allModLines.join(" | ");
-
-            const attackWeight = skillItem?.system.weight ?? 0;
-
-            const structuredDesc = JSON.stringify({
-              lightCost, emotionCost,
-              weight: attackWeight,
-              diceData,
-              description: skillModText
-            });
-
-            _enemyRevealTracker.add(baseActorId, {
-              skillName:   skillName,
-              skillImg:    skillItem?.img ?? actor.img ?? "icons/svg/mystery-man.svg",
-              description: structuredDesc,
-              type:        "skill",
-              tokenId:     tokenDoc?.id ?? null
-            });
           }
         }
       }
-    }
     } // end if (_oldMessageIds)
   }
 
@@ -1677,9 +1677,9 @@ Hooks.on("renderChatMessage", (message, html) => {
               const passiveText = egoItem.system.passive?.trim() ?? "";
               if (passiveName || passiveText) {
                 game.sotc?.egoPassiveTracker?.add(actor.id, {
-                  egoId:       egoItem.id,
-                  egoName:     egoItem.name,
-                  egoImg:      egoItem.img,
+                  egoId: egoItem.id,
+                  egoName: egoItem.name,
+                  egoImg: egoItem.img,
                   passiveName: passiveName || egoItem.name,
                   passiveText: passiveText,
                   tokenActorId: actor.id
@@ -1727,8 +1727,8 @@ Hooks.on("renderChatMessage", (message, html) => {
   // ── Safeguard yes/no ───────────────────────────────────────────────────────
   html.find(".sotc-safeguard-yes").on("click", async ev => {
     ev.preventDefault();
-    const btn    = ev.currentTarget;
-    const actor  = game.actors.get(btn.dataset.actorId);
+    const btn = ev.currentTarget;
+    const actor = game.actors.get(btn.dataset.actorId);
     if (!actor) return;
 
     // Spend 1 Safeguard stack
@@ -1740,11 +1740,11 @@ Hooks.on("renderChatMessage", (message, html) => {
     // Remove the stacks that were just added — nullify the trigger delta.
     // We read the live count from the actor (not the stale dataset value) so
     // concurrent updates don't cause over- or under-correction.
-    const statusItem  = actor.items.get(btn.dataset.statusId);
+    const statusItem = actor.items.get(btn.dataset.statusId);
     const stacksDelta = Number(btn.dataset.statusDelta ?? 1); // how many were added
     if (statusItem) {
       const liveCount = Number(statusItem.system?.count ?? 0);
-      const newCount  = Math.max(0, liveCount - stacksDelta);
+      const newCount = Math.max(0, liveCount - stacksDelta);
       if (newCount === 0) {
         await statusItem.delete();
       } else {
@@ -1752,48 +1752,47 @@ Hooks.on("renderChatMessage", (message, html) => {
       }
     }
 
-    try { await message.delete(); } catch (e) {}
+    try { await message.delete(); } catch (e) { }
   });
 
   html.find(".sotc-safeguard-no").on("click", async ev => {
     ev.preventDefault();
-    try { await message.delete(); } catch (e) {}
+    try { await message.delete(); } catch (e) { }
   });
 
   // ── Reroll die ─────────────────────────────────────────────────────────────
   html.find(".reroll-die").on("click", async ev => {
     ev.preventDefault();
-    const btn        = ev.currentTarget;
-    const item_name  = btn.dataset.itemname || "Unknown Item";
-    const formula    = btn.dataset.formula;
-    const mod        = btn.dataset.mod;
+    const btn = ev.currentTarget;
+    const item_name = btn.dataset.itemname || "Unknown Item";
+    const formula = btn.dataset.formula;
+    const mod = btn.dataset.mod;
     const status_mod = btn.dataset.statmod;
-    let   total      = formula;
-    if (mod       !== 0) total = `${total}+${mod}`;
+    let total = formula;
+    if (mod !== 0) total = `${total}+${mod}`;
     if (status_mod !== 0) total = `${total}+${status_mod}`;
-    const type       = btn.dataset.type;
+    const type = btn.dataset.type;
     const colorClass = btn.dataset.color;
-    let   modules;
+    let modules;
     try { modules = JSON.parse(btn.dataset.modules || "[]"); if (!Array.isArray(modules)) modules = []; }
     catch { modules = []; }
 
     try {
-      const roll       = await (new Roll(total)).roll({ async: true });
-      const icon       = `systems/sotc/assets/dice types/${type}.png`;
+      const roll = await (new Roll(total)).roll({ async: true });
+      const icon = `systems/sotc/assets/dice types/${type}.png`;
       const moduleLine = modules.length
-        ? `<div style="margin-top:4px;font-size:12px;"><em>${
-            modules.map(m => `<div style="margin-left:5px;margin-bottom:2px;">• ${enrichModWithStatusIcons(m, game.actors.get(message.speaker?.actor))}</div>`).join("")
-          }</em></div>`
+        ? `<div style="margin-top:4px;font-size:12px;"><em>${modules.map(m => `<div style="margin-left:5px;margin-bottom:2px;">• ${enrichModWithStatusIcons(m, game.actors.get(message.speaker?.actor))}</div>`).join("")
+        }</em></div>`
         : "";
 
       const payload = {
-        dieType:     type,
-        total:       roll.total,
-        itemName:    item_name,
+        dieType: type,
+        total: roll.total,
+        itemName: item_name,
         formula,
-        isOffensive: ["slash","pierce","blunt","counter-slash","counter-pierce","counter-blunt"].includes(type),
-        isDefensive: ["block","evade","counter-block","counter-evade"].includes(type),
-        actorId:     message.speaker?.actor ?? ChatMessage.getSpeaker()?.actor ?? null
+        isOffensive: ["slash", "pierce", "blunt", "counter-slash", "counter-pierce", "counter-blunt"].includes(type),
+        isDefensive: ["block", "evade", "counter-block", "counter-evade"].includes(type),
+        actorId: message.speaker?.actor ?? ChatMessage.getSpeaker()?.actor ?? null
       };
 
       const messageContent = `
@@ -1829,8 +1828,8 @@ Hooks.on("renderChatMessage", (message, html) => {
 
       await roll.toMessage({
         speaker: ChatMessage.getSpeaker(),
-        flavor:  messageContent,
-        sound:   CONFIG.sounds.dice
+        flavor: messageContent,
+        sound: CONFIG.sounds.dice
       });
     } catch (err) {
       console.error("Reroll failed:", err);
@@ -1860,7 +1859,7 @@ Hooks.on("renderChatMessage", (message, html) => {
     }
 
     const dieType = normaliseType(payload.dieType);
-    const dieBtn  = wizard.querySelector(`.sotc-die-btn[data-value="${dieType}"]`);
+    const dieBtn = wizard.querySelector(`.sotc-die-btn[data-value="${dieType}"]`);
     if (dieBtn) {
       dieBtn.click(); // reuses the wizard's own onclick to update styling + hidden input
     } else {
@@ -1871,7 +1870,7 @@ Hooks.on("renderChatMessage", (message, html) => {
     const input = wizard.querySelector('input[name="defender_die"]');
     if (input) {
       input.value = payload.total;
-      input.dispatchEvent(new Event("input",  { bubbles: true }));
+      input.dispatchEvent(new Event("input", { bubbles: true }));
       input.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
@@ -1883,10 +1882,10 @@ Hooks.on("renderChatMessage", (message, html) => {
     ev.preventDefault();
     const btn = ev.currentTarget;
     if (btn.dataset.undone === "1") return;
-    btn.dataset.undone       = "1";
-    btn.style.opacity        = "0.4";
-    btn.style.pointerEvents  = "none";
-    btn.innerHTML            = `<i class="fas fa-check"></i> Undone`;
+    btn.dataset.undone = "1";
+    btn.style.opacity = "0.4";
+    btn.style.pointerEvents = "none";
+    btn.innerHTML = `<i class="fas fa-check"></i> Undone`;
 
     let snapshot;
     try { snapshot = JSON.parse(btn.dataset.snapshot); }
@@ -1895,10 +1894,10 @@ Hooks.on("renderChatMessage", (message, html) => {
     const restoreActor = async (snap) => {
       if (!snap) return;
       const actor = (snap.tokenId ? canvas.tokens?.get(snap.tokenId)?.actor : null)
-                 ?? game.actors.get(snap.actorId);
+        ?? game.actors.get(snap.actorId);
       if (!actor) return;
       await game.sotc.updateActor(actor, {
-        "system.health.value":  snap.hp,
+        "system.health.value": snap.hp,
         "system.stagger.value": snap.stagger,
       });
     };
@@ -1911,11 +1910,11 @@ Hooks.on("renderChatMessage", (message, html) => {
   // ── Apply status from chat mod line [+] button ────────────────────────────
   html.find(".apply-status-from-chat").on("click", async ev => {
     ev.preventDefault();
-    const statusName    = ev.currentTarget.dataset.statusName;
-    const rawCount      = ev.currentTarget.dataset.statusCount;
+    const statusName = ev.currentTarget.dataset.statusName;
+    const rawCount = ev.currentTarget.dataset.statusCount;
     const speakerActorId = message.speaker?.actor;
-    const speakerActor  = speakerActorId ? game.actors.get(speakerActorId) : null;
-    const sourceStatus  =
+    const speakerActor = speakerActorId ? game.actors.get(speakerActorId) : null;
+    const sourceStatus =
       speakerActor?.items.find(i => i.type === "status" && i.name.toLowerCase() === statusName) ??
       game.items.find(i => i.type === "status" && i.name.toLowerCase() === statusName);
 
@@ -1932,13 +1931,13 @@ Hooks.on("renderChatMessage", (message, html) => {
     } else {
       stacksToAdd = await new Promise(resolve => {
         new Dialog({
-          title:   `Apply ${sourceStatus.name}`,
+          title: `Apply ${sourceStatus.name}`,
           content: `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
             <label style="flex-shrink:0;">Stacks to apply:</label>
             <input id="sotc-stack-input" type="number" min="1" value="1" style="width:60px;" autofocus />
           </div>`,
           buttons: {
-            apply:  { icon: '<i class="fas fa-check"></i>',  label: "Apply",  callback: html => { const val = Number(html.find("#sotc-stack-input").val()); resolve(val > 0 ? val : 1); } },
+            apply: { icon: '<i class="fas fa-check"></i>', label: "Apply", callback: html => { const val = Number(html.find("#sotc-stack-input").val()); resolve(val > 0 ? val : 1); } },
             cancel: { icon: '<i class="fas fa-times"></i>', label: "Cancel", callback: () => resolve(null) }
           },
           default: "apply"
@@ -1956,7 +1955,7 @@ Hooks.on("renderChatMessage", (message, html) => {
         await existing.update({ "system.count": newCount });
         ui.notifications.info(`${sourceStatus.name} on ${targetActor.name} → ${newCount}.`);
       } else {
-        const newItem        = sourceStatus.toObject();
+        const newItem = sourceStatus.toObject();
         newItem.system.count = stacksToAdd;
         await targetActor.createEmbeddedDocuments("Item", [newItem]);
         ui.notifications.info(`Applied ${stacksToAdd}x ${sourceStatus.name} to ${targetActor.name}.`);

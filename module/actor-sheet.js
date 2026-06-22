@@ -977,23 +977,30 @@ export class SotCActorSheet extends ActorSheet {
 
     // Trigger effect, like tremor burst or bleed or whatever you want
     const effect_type = item.system.effect;
-    const flat_change = Number(item.system.potency_flat ?? 0)
+    const flat_change = Number(item.system.potency_flat ?? 0);
     const potency = Number(item.system.potency ?? 1);
     const count = Number(item.system.count ?? 0);
-    let delta = 0
-    if (count) {
-      delta = count * potency + flat_change;
+    
+    // Get the active count
+    let active_count = Number(item.flags?.sotc?.round_start_count ?? 0);
+    active_count = Math.min(active_count, count);
+    
+    const isInstant = ["haste", "bind"].includes(item.name.toLowerCase());
+    let calc_count = isInstant ? count : active_count;
+
+    let delta = 0;
+    if (calc_count) {
+      delta = calc_count * potency + flat_change;
     }
     const sign = effect_type === "Decrease" ? -1 : 1;
 
     const updates = {};
-    // I know this could be more optimized, but I didn't want to ASSUME that somebody wouldn't come in here tampering with stuff and want things to be plainly modifiable.
-    // So yeah this in particular is a little bit excessive, but it works fine
     if (post_active.operator === "sinking_deluge") {
       if (item.system.target !== "stagger") {
-        console.log("Sinking Deluge is supposed to target stagger! Find actor-sheet.js lines ~780 if you wanna mess around.")
-      } if (sign !== -1) {
-        console.log("Sinking Deluge is supposed to SUBTRACT stagger! Find actor-sheet.js lines ~780 if you wanna mess around.")
+        console.log("Sinking Deluge is supposed to target stagger! Find actor-sheet.js lines ~780 if you wanna mess around.");
+      } 
+      if (sign !== -1) {
+        console.log("Sinking Deluge is supposed to SUBTRACT stagger! Find actor-sheet.js lines ~780 if you wanna mess around.");
       }
       const curr = this.actor.system.stagger.value;
       delta *= 3;
@@ -1035,25 +1042,30 @@ export class SotCActorSheet extends ActorSheet {
       this.actor.update(updates);
     }
 
-    // Change count, according to variable. Generally either dividing or halving, but I can imagine a player wanting to do otherwise
-    let new_count = count;
+    // Change count, according to variable, evaluated against calc_count (active count)
     const variable = Number(post_active.variable ?? 0);
+    let count_change = 0;
+    
     switch (post_active.operator) {
-      case "add": new_count += variable; break;
-      case "subtract": new_count -= variable; break;
-      case "multiply": new_count *= variable; break;
-      // Protect against division by 0 because we aren't dumb
-      case "divide": new_count = variable !== 0 ? Math.floor(new_count / variable) : new_count; break;
-      case "sinking_deluge": new_count = 0;
-      case "maintain": break;
-      default: console.warn("Unknown operator, how the heckle did you manage, man? Here it is:", post_active.operator);
+      case "add": count_change = variable; break;
+      case "subtract": count_change = -variable; break;
+      case "multiply": count_change = (calc_count * variable) - calc_count; break;
+      case "divide": count_change = variable !== 0 ? Math.floor(calc_count / variable) - calc_count : 0; break;
+      case "sinking_deluge": count_change = -calc_count; break;
+      case "clear": count_change = -calc_count; break;
+      case "maintain": count_change = 0; break;
+      default: console.warn("Unknown operator...", post_active.operator);
     }
 
-    // Prevent status count from becoming negative. Doesn't prevent the user from initially setting values to negative, I think
-    new_count = Math.max(0, new_count)
+    // Prevent status count from becoming negative
+    let new_count = Math.max(0, count + count_change);
+    let new_active_count = Math.max(0, active_count + count_change);
 
     // Update the item
-    return item.update({ "system.count": new_count });
+    return item.update({ 
+      "system.count": new_count,
+      "flags.sotc.round_start_count": new_active_count
+    });
   }
 
   /* -------------------------------------------- */
