@@ -675,12 +675,38 @@ Hooks.on("combatRound", async (combat, round) => {
         .map(i => i.id)
     );
 
+    const consumed_statuses = new Set();
+    const burn_status = statuses.find(s => s.name.toLowerCase() === "burn");
+    const pyre_status = statuses.find(s => s.name.toLowerCase() === "pyre");
+
+    if (burn_status && pyre_status) {
+      let burn_active = Number(burn_status.flags?.sotc?.round_start_count ?? 0);
+      burn_active = Math.min(burn_active, Number(burn_status.system.count ?? 0));
+      const burn_endOp = burn_status.system.scene_end_effect?.operator;
+      if (burn_endOp && burn_endOp !== "maintain" && (burn_active > 0 || Number(burn_status.system.potency_flat ?? 0) > 0)) {
+        let pyre_count = Number(pyre_status.flags?.sotc?.round_start_count ?? 0);
+        pyre_count = Math.min(pyre_count, Number(pyre_status.system.count ?? 0));
+        if (pyre_count >= 3) {
+          consumed_statuses.add(pyre_status.id);
+        }
+      }
+    }
+
     let accumulated_hp_delta = 0, accumulated_hp_min = 0;
     let accumulated_stg_delta = 0, accumulated_stg_min = 0;
     let hp_affected = false;
     let stg_affected = false;
 
     for (const status of statuses) {
+      if (consumed_statuses.has(status.id)) {
+        status_updates.push({ 
+          _id: status.id, 
+          "system.count": 0, 
+          "flags.sotc.round_start_count": 0 
+        });
+        continue;
+      }
+
       if (["haste", "bind"].includes(status.name.toLowerCase())) {
         status_updates.push({ _id: status.id, "flags.sotc.round_start_count": Number(status.system.count ?? 0) });
         continue;
@@ -727,7 +753,18 @@ Hooks.on("combatRound", async (combat, round) => {
         const flat_change = Number(status.system.potency_flat ?? 0);
         const potency = Number(status.system.potency ?? 1);
         const count = active_count;
-        const delta = count * potency + flat_change;
+        let delta = count * potency + flat_change;
+
+        if (status.name.toLowerCase() === "burn" && pyre_status && consumed_statuses.has(pyre_status.id)) {
+          let pyre_count = Number(pyre_status.flags?.sotc?.round_start_count ?? 0);
+          pyre_count = Math.min(pyre_count, Number(pyre_status.system.count ?? 0));
+          if (pyre_count >= 5) {
+            delta *= 2;
+          } else {
+            delta = Math.floor(delta * 1.5);
+          }
+        }
+
         const sign = effect_type === "Decrease" ? -1 : 1;
         const minLimit = Number(status.system.scene_end_effect?.min_resource_limit ?? 0);
 
