@@ -611,6 +611,12 @@ export class SotCActorSheet extends ActorSheet {
                         style="width: 16px; height: 16px; color: black; margin-left: 8px; margin-top: 4px;">
                         <i class="fas fa-bolt"></i>
                       </a>
+                      <a class="send-to-wizard"
+                        title="Send to open Damage Wizard as opposing die"
+                        data-payload='${JSON.stringify(payload)}'
+                        style="width: 16px; height: 16px; color: black; margin-left: 8px; margin-top: 4px;">
+                        <i class="fas fa-crosshairs"></i>
+                      </a>
                     </div>
                   </span>
                   ${moduleLine ? `${moduleLine}` : ""}
@@ -867,6 +873,12 @@ export class SotCActorSheet extends ActorSheet {
                         data-payload='${JSON.stringify(payload)}'
                         style="width: 16px; height: 16px; color: black; margin-left: 8px; margin-top: 4px;">
                         <i class="fas fa-bolt"></i>
+                      </a>
+                      <a class="send-to-wizard"
+                        title="Send to open Damage Wizard as opposing die"
+                        data-payload='${JSON.stringify(payload)}'
+                        style="width: 16px; height: 16px; color: black; margin-left: 8px; margin-top: 4px;">
+                        <i class="fas fa-crosshairs"></i>
                       </a>
                     </div>
                   </span>

@@ -297,6 +297,23 @@ async _onRollSkillDie(event) {
                   style="width: 16px; height: 16px; color: black; margin-left: 8px; margin-top: 4px;">
                   <i class="fas fa-bolt"></i>
                 </a>
+                <a class="send-to-wizard"
+                  title="Send to open Damage Wizard as opposing die"
+                  data-payload='${JSON.stringify({
+                    dieType: die.type,
+                    total: roll.total,
+                    itemName: this.item.name,
+                    formula: die.formula,
+                    itemId: this.item.id,
+                    dieIndex: index,
+                    isOffensive: ["slash","pierce","blunt","counter-slash","counter-pierce","counter-blunt"].includes(die.type),
+                    isDefensive: ["block","evade","counter-block","counter-evade"].includes(die.type),
+                    actorId: this.actor?.id ?? null,
+                    tokenId: this.token?.id ?? this.actor?.token?.id ?? null
+                  })}'
+                  style="width: 16px; height: 16px; color: black; margin-left: 8px; margin-top: 4px;">
+                  <i class="fas fa-crosshairs"></i>
+                </a>
             </div>
           </span>
           ${moduleLine ? `${moduleLine}` : ""}
