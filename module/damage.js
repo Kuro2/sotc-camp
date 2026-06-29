@@ -34,6 +34,10 @@ function isDefensiveType(t) {
 }
 
 function resolveAttackerActor(payload) {
+  if (payload.tokenId) {
+    const t = canvas.tokens?.get(payload.tokenId) ?? canvas.tokens?.placeables?.find(p => p.id === payload.tokenId);
+    if (t && t.actor) return t.actor;
+  }
   if (payload.actorId) {
     const a = game.actors.get(payload.actorId);
     if (a) return a;
@@ -420,12 +424,6 @@ async function resolveDamage(payload, html, targetToken) {
     } : null,
   };
 
-  // ── Apply stats ───────────────────────────────────────────────────────────────
-  await applyStats(targetActor, { dmg: tDmg, stagger: tStagger, staggerGain: tStaggerGain });
-  if (attackerActor && (aDmg > 0 || aStagger > 0 || aStaggerGain > 0)) {
-    await applyStats(attackerActor, { dmg: aDmg, stagger: aStagger, staggerGain: aStaggerGain });
-  }
-
   // ── Bleed ─────────────────────────────────────────────────────────────────────
   const bleedStatLines = [];
   if (isOffensive && !suppressBleed && game.settings.get("sotc", "bleedAutoCalc") && attackerActor) {
@@ -434,7 +432,7 @@ async function resolveDamage(payload, html, targetToken) {
     );
     if (bleedStatus) {
       const bleedDmg = Number(bleedStatus.system.count);
-      await applyStats(attackerActor, { dmg: bleedDmg });
+      aDmg += bleedDmg;
       await bleedStatus.update({ "system.count": Math.max(0, bleedDmg - 1) });
       bleedStatLines.push(
         '<span style="color:#c03030;display:flex;align-items:center;gap:4px;">' +
@@ -458,11 +456,17 @@ async function resolveDamage(payload, html, targetToken) {
     for (const thorns of thornsStatuses) {
       let thornsDmg = Number(thorns.system.count);
       if (isCrit) thornsDmg *= 2;
-      await applyStats(attackerActor, { dmg: thornsDmg });
+      aDmg += thornsDmg;
       thornsStatLines.push(
         `<span style="color:#e07030;display:flex;align-items:center;gap:4px;"><img src="${thorns.img || 'systems/sotc/assets/statuses/Thorns.png'}" style="width:16px;height:16px;border:none;object-fit:contain;"> ${thorns.name} (${isCrit ? "CRIT × 2 = " + thornsDmg : thornsDmg}) HP → ${attackerActor.name}</span>`
       );
     }
+  }
+
+  // ── Apply stats ───────────────────────────────────────────────────────────────
+  await applyStats(targetActor, { dmg: tDmg, stagger: tStagger, staggerGain: tStaggerGain });
+  if (attackerActor && (aDmg > 0 || aStagger > 0 || aStaggerGain > 0)) {
+    await applyStats(attackerActor, { dmg: aDmg, stagger: aStagger, staggerGain: aStaggerGain });
   }
 
   // ── Emotion Points ────────────────────────────────────────────────────────────
@@ -1792,7 +1796,8 @@ Hooks.on("renderChatMessage", (message, html) => {
         formula,
         isOffensive: ["slash", "pierce", "blunt", "counter-slash", "counter-pierce", "counter-blunt"].includes(type),
         isDefensive: ["block", "evade", "counter-block", "counter-evade"].includes(type),
-        actorId: message.speaker?.actor ?? ChatMessage.getSpeaker()?.actor ?? null
+        actorId: message.speaker?.actor ?? ChatMessage.getSpeaker()?.actor ?? null,
+        tokenId: message.speaker?.token ?? ChatMessage.getSpeaker()?.token ?? null
       };
 
       const messageContent = `
