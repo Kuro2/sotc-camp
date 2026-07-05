@@ -431,16 +431,26 @@ async function resolveDamage(payload, html, targetToken) {
       i.type === "status" && i.name.toLowerCase() === "bleed" && Number(i.system?.count ?? 0) > 0
     );
     if (bleedStatus) {
-      const bleedDmg = Number(bleedStatus.system.count);
-      aDmg += bleedDmg;
-      await bleedStatus.update({ "system.count": Math.max(0, bleedDmg - 1) });
-      bleedStatLines.push(
-        '<span style="color:#c03030;display:flex;align-items:center;gap:4px;">' +
-        '<img src="systems/sotc/assets/statuses/Bleed.png" style="width:16px;height:16px;border:none;object-fit:contain;"> ' +
-        'Bleed ' + bleedDmg + ' HP \u2192 ' + attackerActor.name +
-        ' (Bleed ' + bleedDmg + '\u2192' + (bleedDmg - 1) + ')' +
-        '</span>'
-      );
+      const totalBleed = Number(bleedStatus.system.count ?? 0);
+      const isInstant = ["haste", "bind"].includes(bleedStatus.name.toLowerCase());
+      let bleedDmg = isInstant ? totalBleed : Math.min(Number(bleedStatus.flags?.sotc?.round_start_count ?? 0), totalBleed);
+      
+      if (bleedDmg > 0) {
+        aDmg += bleedDmg;
+        const newTotal = Math.max(0, totalBleed - 1);
+        const updates = { "system.count": newTotal };
+        if (!isInstant) {
+          updates["flags.sotc.round_start_count"] = Math.max(0, bleedDmg - 1);
+        }
+        await bleedStatus.update(updates);
+        bleedStatLines.push(
+          '<span style="color:#c03030;display:flex;align-items:center;gap:4px;">' +
+          '<img src="systems/sotc/assets/statuses/Bleed.png" style="width:16px;height:16px;border:none;object-fit:contain;"> ' +
+          'Bleed ' + bleedDmg + ' HP \u2192 ' + attackerActor.name +
+          ' (Bleed ' + bleedDmg + '\u2192' + (bleedDmg - 1) + ')' +
+          '</span>'
+        );
+      }
     }
   }
 
@@ -454,12 +464,17 @@ async function resolveDamage(payload, html, targetToken) {
       Number(i.system?.count ?? 0) > 0
     );
     for (const thorns of thornsStatuses) {
-      let thornsDmg = Number(thorns.system.count);
-      if (isCrit) thornsDmg *= 2;
-      aDmg += thornsDmg;
-      thornsStatLines.push(
-        `<span style="color:#e07030;display:flex;align-items:center;gap:4px;"><img src="${thorns.img || 'systems/sotc/assets/statuses/Thorns.png'}" style="width:16px;height:16px;border:none;object-fit:contain;"> ${thorns.name} (${isCrit ? "CRIT × 2 = " + thornsDmg : thornsDmg}) HP → ${attackerActor.name}</span>`
-      );
+      const totalThorns = Number(thorns.system.count ?? 0);
+      const isInstant = ["haste", "bind"].includes(thorns.name.toLowerCase());
+      let thornsDmg = isInstant ? totalThorns : Math.min(Number(thorns.flags?.sotc?.round_start_count ?? 0), totalThorns);
+      
+      if (thornsDmg > 0) {
+        if (isCrit) thornsDmg *= 2;
+        aDmg += thornsDmg;
+        thornsStatLines.push(
+          `<span style="color:#e07030;display:flex;align-items:center;gap:4px;"><img src="${thorns.img || 'systems/sotc/assets/statuses/Thorns.png'}" style="width:16px;height:16px;border:none;object-fit:contain;"> ${thorns.name} (${isCrit ? "CRIT × 2 = " + thornsDmg : thornsDmg}) HP → ${attackerActor.name}</span>`
+        );
+      }
     }
   }
 
